@@ -267,6 +267,12 @@ def sell():
         return render_template("sell.html", rows=rows)
 
 
+@app.route("/userinfo", methods=["GET", "POST"])
+@login_required
+def userinfo():
+    return render_template("userinfo.html")
+
+
 def errorhandler(e):
     """Handle error"""
     if not isinstance(e, HTTPException):
