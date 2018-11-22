@@ -1,0 +1,18 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Settings
+{% endblock %}
+
+{% block main %}
+    <dl class="row" align="left">
+        <dt class="col-sm-3">Username</dt>
+        <dd class="col-sm-9">{{ username }}</dd>
+
+        <dt class="col-sm-3">Password</dt>
+        <dd class="col-sm-9">{{ hash }}</dd>
+
+        <dt class="col-sm-3">Preferences</dt></dt>
+        <dd class="col-sm-9">blah blah</dd>
+        </dl>
+{% endblock %}
