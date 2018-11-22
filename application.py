@@ -274,7 +274,7 @@ def userinfo():
     return render_template("userinfo.html", username = db.execute("SELECT username FROM users WHERE id = :user_id", user_id = session["user_id"])[0]["username"], hash = db.execute("SELECT hash FROM users WHERE id = :user_id", user_id = session["user_id"])[0]["hash"])
 
 @app.route("/clubs", methods=["GET", "POST"])
-@login_required
+# @login_required
 def clubs():
     return render_template("clubs.html")
 
