@@ -41,7 +41,7 @@ app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
 # Configure CS50 Library to use SQLite database
-db = SQL("sqlite:///finance.db")
+db = SQL("sqlite:///ClubPub.db")
 
 
 @app.route("/")
@@ -246,7 +246,10 @@ def userinfo():
 @app.route("/clubs", methods=["GET", "POST"])
 # @login_required
 def clubs():
-    return render_template("clubs.html")
+    if request.method == "GET":
+        clubs = db.execute("SELECT * FROM clubs")
+        print(clubs)
+        return render_template("clubs.html", clubs=clubs)
 
 @app.route("/calendar", methods=["GET", "POST"])
 @login_required
