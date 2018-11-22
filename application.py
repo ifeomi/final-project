@@ -1,11 +1,16 @@
+from __future__ import print_function
+import datetime
+from googleapiclient.discovery import build
+from httplib2 import Http
+from oauth2client import file, client, tools
 import os
-
 from cs50 import SQL
 from flask import Flask, flash, jsonify, redirect, render_template, request, session
 from flask_session import Session
 from tempfile import mkdtemp
 from werkzeug.exceptions import default_exceptions, HTTPException, InternalServerError
 from werkzeug.security import check_password_hash, generate_password_hash
+
 
 from helpers import apology, login_required, lookup, usd
 
@@ -232,41 +237,6 @@ def register():
         return render_template("register.html")
 
 
-@app.route("/sell", methods=["GET", "POST"])
-@login_required
-def sell():
-    """Sell shares of stock"""
-    if request.method == "POST":
-        symbol = request.form.get("symbol")
-        shares = int(request.form.get("shares"))
-        price = lookup(symbol)["price"]
-
-        if not symbol:
-            return apology("Invalid symbol")
-        elif shares < 1:
-            return apology("Shares must be greater than or equal to 1")
-
-        rows = db.execute("SELECT :symbol, SUM(shares) FROM transactions JOIN users ON users.id = :user_id GROUP BY transactions.symbol HAVING symbol = :symbol",
-        user_id=session["user_id"], symbol=symbol)
-
-        if not rows:
-            return apology("You don't own that stock")
-        elif rows[0]["SUM(shares)"] < shares:
-            return apology("You don't own enough shares of the stock")
-
-        curr_cash = db.execute("SELECT cash FROM users WHERE id = :user_id", user_id=session["user_id"])
-        cash = curr_cash[0]["cash"] + shares * price
-        print()
-
-        db.execute("UPDATE users SET cash = :cash WHERE id = :user_id", cash=cash, user_id=session["user_id"])
-        result = db.execute("INSERT INTO transactions (symbol, shares, price, user_id) VALUES(:symbol, :shares, :price, :user_id)",
-        symbol=symbol, shares=-1*shares, price=price, user_id=session["user_id"])
-        return redirect("/")
-    else:
-        rows = db.execute("SELECT symbol FROM transactions JOIN users ON users.id = :user_id GROUP BY transactions.symbol", user_id=session["user_id"])
-        return render_template("sell.html", rows=rows)
-
-
 
 @app.route("/userinfo", methods=["GET", "POST"])
 @login_required
@@ -288,7 +258,6 @@ def calendar():
 @login_required
 def createevent():
     SCOPES = 'https://www.googleapis.com/auth/calendar'
-
     # The file token.json stores the user's access and refresh tokens, and is
     # created automatically when the authorization flow completes for the first
     # time.
@@ -298,7 +267,7 @@ def createevent():
         flow = client.flow_from_clientsecrets('credentials.json', SCOPES)
         creds = tools.run_flow(flow, store)
     service = build('calendar', 'v3', http=creds.authorize(Http()))
-    
+
     event = {
         'summary': 'Google I/O 2015',
         'location': '800 Howard St., San Francisco, CA 94103',
