@@ -260,47 +260,71 @@ def calendar():
 @app.route("/createevent", methods=["GET", "POST"])
 @login_required
 def createevent():
-    SCOPES = 'https://www.googleapis.com/auth/calendar'
-    # The file token.json stores the user's access and refresh tokens, and is
-    # created automatically when the authorization flow completes for the first
-    # time.
-    store = file.Storage('token.json')
-    creds = store.get()
-    if not creds or creds.invalid:
-        flow = client.flow_from_clientsecrets('credentials.json', SCOPES)
-        creds = tools.run_flow(flow, store)
-    service = build('calendar', 'v3', http=creds.authorize(Http()))
+    if request.method == "POST":
+        # Store inputs in variables for easier access
+        eventname = request.form.get("eventname")
+        club = request.form.get("club")
+        description = request.form.get("description")
+        picture = request.form.get("picture")
+        tags = request.form.get("tags")
+        dateandtime = request.form.get("dateandtime")
 
-    event = {
-        'summary': 'Google I/O 2015',
-        'location': '800 Howard St., San Francisco, CA 94103',
-        'description': 'A chance to hear more about Google\'s developer products.',
-        'start': {
-            'dateTime': '2015-05-28T09:00:00-07:00',
-            'timeZone': 'America/Los_Angeles',
-        },
-        'end': {
-            'dateTime': '2015-05-28T17:00:00-07:00',
-            'timeZone': 'America/Los_Angeles',
-        },
-        'recurrence': [
-            'RRULE:FREQ=DAILY;COUNT=2'
-        ],
-        'attendees': [
-            {'email': 'lpage@example.com'},
-            {'email': 'sbrin@example.com'},
-        ],
-        'reminders': {
-            'useDefault': False,
-            'overrides': [
-                {'method': 'email', 'minutes': 24 * 60},
-                {'method': 'popup', 'minutes': 10},
+        club_id = db.execute("SELECT club_id FROM clubs WHERE name=:club", club=club)
+
+        # Return relevant apology is user didn't input one variable
+        if not eventname:
+            return apology("Missing event name!")
+        if not club:
+            return apology("Missing club!")
+
+        db.execute("INSERT INTO events (club_id, event name, description, picture link, tags, date and time) VALUES(:club_id, :eventname, :description, :picture, :tags, :dateandtime)",
+        club_id=club_id, eventname=eventname, description=description, picture=picture, tags=tags, dateandtime=dateandtime)
+
+        SCOPES = 'https://www.googleapis.com/auth/calendar'
+        # The file token.json stores the user's access and refresh tokens, and is
+        # created automatically when the authorization flow completes for the first
+        # time.
+        store = file.Storage('token.json')
+        creds = store.get()
+        if not creds or creds.invalid:
+            flow = client.flow_from_clientsecrets('credentials.json', SCOPES)
+            creds = tools.run_flow(flow, store)
+        service = build('calendar', 'v3', http=creds.authorize(Http()))
+
+        event = {
+            'summary': 'Google I/O 2015',
+            'location': '800 Howard St., San Francisco, CA 94103',
+            'description': 'A chance to hear more about Google\'s developer products.',
+            'start': {
+                'dateTime': '2015-05-28T09:00:00-07:00',
+                'timeZone': 'America/Los_Angeles',
+            },
+            'end': {
+                'dateTime': '2015-05-28T17:00:00-07:00',
+                'timeZone': 'America/Los_Angeles',
+            },
+            'recurrence': [
+                'RRULE:FREQ=DAILY;COUNT=2'
             ],
-        },
-    }
-    event = service.events().insert(calendarId='primary', body=event).execute()
-    print('Event created: %s' % (event.get('htmlLink')))
-    return render_template("calendar.html")
+            'attendees': [
+                {'email': 'lpage@example.com'},
+                {'email': 'sbrin@example.com'},
+            ],
+            'reminders': {
+                'useDefault': False,
+                'overrides': [
+                    {'method': 'email', 'minutes': 24 * 60},
+                    {'method': 'popup', 'minutes': 10},
+                ],
+            },
+        }
+        event = service.events().insert(calendarId='primary', body=event).execute()
+        print('Event created: %s' % (event.get('htmlLink')))
+        return render_template("calendar.html")
+    else:
+        # clubs = db.execute("SELECT name FROM clubs")
+        clubs = ["Mock Trial", "Speech", "Debate"]
+        return render_template("createevent.html", clubs=clubs)
 
 
 def errorhandler(e):
