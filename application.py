@@ -112,9 +112,9 @@ def history():
     results = db.execute("SELECT * FROM transactions JOIN users ON users.id = transactions.user_id WHERE users.id=:user_id", user_id=session["user_id"])
     return render_template("history.html", results=results)
 
-@app.route("/password", methods=["GET", "POST"])
+@app.route("/settings", methods=["GET", "POST"])
 @login_required
-def password():
+def settings():
     # User reached route via post
     if request.method == "POST":
 
@@ -137,7 +137,8 @@ def password():
                 return apology("new passwords don't match")
     # User reached route via get
     else:
-        return render_template("password.html")
+        user = db.execute("SELECT * FROM users WHERE id = :user_id", user_id = session["user_id"])[0]
+        return render_template("settings.html", username = user["username"])
 
 @app.route("/login", methods=["GET", "POST"])
 def login():

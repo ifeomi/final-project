@@ -5,14 +5,28 @@
 {% endblock %}
 
 {% block main %}
-    <dl class="row" align="left">
-        <dt class="col-sm-3">Username</dt>
-        <dd class="col-sm-9">{{ username }}</dd>
+    <div class="text-left">
+        <h4 class="text-left">Account Information</h4>
+        <div class="text-left">
+            <dl>
+                <dt>Username</dt>
+                <dd>{{ username }}</dd>
+            </dl>
+        </div>
 
-        <dt class="col-sm-3">Password</dt>
-        <dd class="col-sm-9">{{ hash }}</dd>
-
-        <dt class="col-sm-3">Preferences</dt></dt>
-        <dd class="col-sm-9">blah blah</dd>
-        </dl>
+        <hr>
+        <h4 class="text-left">Change Password</h4>
+        <form action="/settings" method="post">
+            <div class="form-group">
+                <input class="form-control" name="password" placeholder="Old password" type="password" required>
+            </div>
+            <div class="form-group">
+                <input class="form-control" name="new-password" placeholder="New password" type="password" required>
+            </div>
+            <div class="form-group">
+                <input class="form-control" name="confirmation" placeholder="Confirm new password" type="password" required>
+            </div>
+            <button class="btn btn-primary" type="submit">Change password</button>
+        </form>
+    </div>
 {% endblock %}
