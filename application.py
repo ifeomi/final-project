@@ -4,6 +4,7 @@ from googleapiclient.discovery import build
 from httplib2 import Http
 from oauth2client import file, client, tools
 import os
+import math
 from cs50 import SQL
 from flask import Flask, flash, jsonify, redirect, render_template, request, session
 from flask_session import Session
@@ -42,6 +43,7 @@ Session(app)
 
 # Configure CS50 Library to use SQLite database
 db = SQL("sqlite:///finance.db")
+club_db = SQL("sqlite:///ClubPub.db")
 
 
 @app.route("/")
@@ -247,8 +249,7 @@ def userinfo():
 # @login_required
 def clubs():
     if request.method == "GET":
-        clubs = db.execute("SELECT * FROM clubs")
-        print(clubs)
+        clubs = club_db.execute("SELECT * FROM clubs")
         return render_template("clubs.html", clubs=clubs)
 
 @app.route("/calendar", methods=["GET", "POST"])
