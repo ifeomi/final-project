@@ -45,3 +45,18 @@ main img
     /* constrain images on small screens */
     max-width: 100%;
 }
+
+.card-header
+{
+    font-size: 30px;
+}
+
+.card-title
+{
+    font-size: 25px;
+}
+
+.heading
+{
+    font-size: 50px;
+}

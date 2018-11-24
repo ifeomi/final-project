@@ -11,6 +11,7 @@ from flask_session import Session
 from tempfile import mkdtemp
 from werkzeug.exceptions import default_exceptions, HTTPException, InternalServerError
 from werkzeug.security import check_password_hash, generate_password_hash
+import random
 
 
 from helpers import apology, login_required, lookup, usd
@@ -49,15 +50,8 @@ club_db = SQL("sqlite:///ClubPub.db")
 @app.route("/")
 @login_required
 def index():
-    cash = db.execute("SELECT cash FROM users WHERE id=:user_id", user_id=session["user_id"])
-    rows = db.execute("SELECT symbol, SUM(shares) FROM transactions JOIN users ON users.id = transactions.user_id GROUP BY transactions.symbol HAVING users.id=:user_id", user_id=session["user_id"])
-    grandtotal = cash[0]["cash"]
-    for row in rows:
-        row["name"] = lookup(row["symbol"])["name"]
-        row["curr_price"] = usd(lookup(row["symbol"])["price"])
-        row["total"] = usd(lookup(row["symbol"])["price"] * row["SUM(shares)"])
-        grandtotal += lookup(row["symbol"])["price"] * row["SUM(shares)"]
-    return render_template("index.html", rows=rows, cash=usd(cash[0]["cash"]), grandtotal=usd(grandtotal))
+    events = club_db.execute("SELECT * FROM events")
+    return render_template("index.html", events=events)
 
 
 @app.route("/buy", methods=["GET", "POST"])
@@ -264,23 +258,24 @@ def calendar():
 def createevent():
     if request.method == "POST":
         # Store inputs in variables for easier access
-        eventname = request.form.get("eventname")
+        title = request.form.get("eventname")
         club = request.form.get("club")
         description = request.form.get("description")
         picture = request.form.get("picture")
         tags = request.form.get("tags")
-        dateandtime = request.form.get("dateandtime")
+        date = request.form.get("date")
+        time = request.form.get("time")
 
-        club_id = db.execute("SELECT club_id FROM clubs WHERE name=:club", club=club)
+        club_id = club_db.execute("SELECT club_id FROM clubs WHERE name=:club", club=club)
 
         # Return relevant apology is user didn't input one variable
-        if not eventname:
+        if not title:
             return apology("Missing event name!")
         if not club:
             return apology("Missing club!")
 
-        db.execute("INSERT INTO events (club_id, event name, description, picture link, tags, date and time) VALUES(:club_id, :eventname, :description, :picture, :tags, :dateandtime)",
-        club_id=club_id, eventname=eventname, description=description, picture=picture, tags=tags, dateandtime=dateandtime)
+        club_db.execute("INSERT INTO events (club_id, title, description, picture, tags, date, time) VALUES(:club_id, :title, :description, :picture, :tags, :date, :time)",
+        club_id=club_id, title=title, description=description, picture=picture, tags=tags, date=date, time=time)
 
         SCOPES = 'https://www.googleapis.com/auth/calendar'
         # The file token.json stores the user's access and refresh tokens, and is
