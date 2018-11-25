@@ -12,6 +12,8 @@ from tempfile import mkdtemp
 from werkzeug.exceptions import default_exceptions, HTTPException, InternalServerError
 from werkzeug.security import check_password_hash, generate_password_hash
 import random
+import datetime
+import time
 
 
 from helpers import apology, login_required, lookup, usd
@@ -50,6 +52,15 @@ club_db = SQL("sqlite:///ClubPub.db")
 @app.route("/")
 @login_required
 def index():
+    # events = club_db.execute("SELECT * FROM events")
+    # now = datetime.datetime.now()
+    # currentdate = now.strftime("%m %d, %Y")
+    # currentdate = time.strptime(currentdate, "%m %d, %Y")
+    # for event in events:
+        # event_id = event["event_id"]
+        # eventdate = time.strptime(event["date"], "%m %d, %Y")
+        # if eventdate < currentdate:
+            # club_db.execute("DELETE FROM events WHERE event_id=:event_id", event_id=event_id)
     events = club_db.execute("SELECT * FROM events")
     return render_template("index.html", events=events)
 
@@ -241,7 +252,7 @@ def userinfo():
     return render_template("userinfo.html", username = db.execute("SELECT username FROM users WHERE id = :user_id", user_id = session["user_id"])[0]["username"], hash = db.execute("SELECT hash FROM users WHERE id = :user_id", user_id = session["user_id"])[0]["hash"])
 
 @app.route("/clubs", methods=["GET", "POST"])
-# @login_required
+@login_required
 def clubs():
     if request.method == "GET":
         clubs = club_db.execute("SELECT * FROM clubs")
@@ -259,23 +270,65 @@ def createevent():
     if request.method == "POST":
         # Store inputs in variables for easier access
         title = request.form.get("eventname")
+        if not title:
+            return apology("Missing event name!")
         club = request.form.get("club")
+        if not club:
+            return apology("Missing club!")
         description = request.form.get("description")
         picture = request.form.get("picture")
-        tags = request.form.get("tags")
-        date = request.form.get("date")
-        time = request.form.get("time")
+        art = request.form.get("art")
+        business = request.form.get("business")
+        startmonth = request.form.get("startmonth")
+        if not startmonth:
+            return apology("You must provide a starting date (month)!")
+        startday = request.form.get("startday")
+        if not startday:
+            return apology("You must provide a starting date (day)!")
+        startyear = request.form.get("startyear")
+        if not startyear:
+            return apology("You must provide a starting date (year)!")
+        endmonth = request.form.get("endmonth")
+        if not endmonth:
+            return apology("You must provide an ending date (month)!")
+        endday = request.form.get("endday")
+        if not endday:
+            return apology("You must provide an ending date (day)!")
+        endyear = request.form.get("endyear")
+        if not endyear:
+            return apology("You must provide an ending date (year)!")
+        starthour = request.form.get("starthour")
+        if not starthour:
+            return apology("You must provide a starting time (hour)!")
+        startminutes = request.form.get("startminutes")
+        if not startminutes:
+            return apology("You must provide a starting time (minutes)!")
+        startampm = request.form.get("startampm")
+        if not startampm:
+            return apology("You must provide a starting time (am/pm)!")
+        endhour = request.form.get("endhour")
+        if not endhour:
+            return apology("You must provide an ending time (hour)!")
+        endminutes = request.form.get("endminutes")
+        if not endminutes:
+            return apology("You must provide an ending time (minutes)!")
+        endampm = request.form.get("endampm")
+        if not endampm:
+            return apology("You must provide an ending time (am/pm)!")
+
+        date = startmonth + " " + startday + ", " + startyear + "-" + endmonth + " " + endday + ", " + endyear
+        time = starthour + ":" + startminutes + "" + startampm + "-" + endhour + ":" + endminutes + "" + endampm
+
+        if art == None:
+            art = ""
+        if business == None:
+            business = ""
+        tags = art + ", " + business
 
         club_id = club_db.execute("SELECT club_id FROM clubs WHERE name=:club", club=club)
 
-        # Return relevant apology is user didn't input one variable
-        if not title:
-            return apology("Missing event name!")
-        if not club:
-            return apology("Missing club!")
-
         club_db.execute("INSERT INTO events (club_id, title, description, picture, tags, date, time) VALUES(:club_id, :title, :description, :picture, :tags, :date, :time)",
-        club_id=club_id, title=title, description=description, picture=picture, tags=tags, date=date, time=time)
+        club_id=club_id[0]["club_id"], title=title, description=description, picture=picture, tags=tags, date=date, time=time)
 
         SCOPES = 'https://www.googleapis.com/auth/calendar'
         # The file token.json stores the user's access and refresh tokens, and is
@@ -319,8 +372,13 @@ def createevent():
         print('Event created: %s' % (event.get('htmlLink')))
         return render_template("calendar.html")
     else:
-        # clubs = db.execute("SELECT name FROM clubs")
-        clubs = ["Mock Trial", "Speech", "Debate"]
+        # userpermissions = club_db.execute("SELECT permissions FROM users WHERE id=:id", session["user_id"])
+        # if userpermissions = True:
+            # clubs = club_db.execute("SELECT name FROM clubs")
+            # return render_template("createevent.html", clubs=clubs)
+        # else:
+            # return apology("You can not access this page!")
+        clubs = club_db.execute("SELECT name FROM clubs")
         return render_template("createevent.html", clubs=clubs)
 
 

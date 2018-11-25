@@ -5,37 +5,277 @@
 {% endblock %}
 
 {% block main %}
+    <!-- from https://getbootstrap.com/docs/4.0/components/forms/#custom-forms -->
+
+    <h2 class="page-title">Create an Event</h2>
+    <hr>
     <form id="createevent" action="/createevent" method="post">
-        <div class="form-group">
-            <input autofocus class="form-control" name="eventname" id="eventname" placeholder="Event Name" type="text">
+        <div class="form-group row">
+            <label for="eventname" class="col-sm-2 col-form-label">Event Name</label>
+            <div class="col-sm-10">
+                <input autofocus class="form-control" name="eventname" id="eventname" placeholder="Type your event's name here" type="text">
+            </div>
         </div>
-        <div class="form-group">
-            <select class="form-control" name="club" id="club">
-                <option value="" selected disabled>Select Your Club</option>
-                {% for club in clubs %}
-                <option value="{{ club }}">{{ club }}</option>
-                {% endfor %}
-            </select>
+        <div class="form-group row">
+            <label for="club" class="col-sm-2 col-form-label">Club</label>
+            <div class="col-sm-10">
+                <select class="form-control" name="club" id="club">
+                    <option value="" selected disabled>Select Your Club</option>
+                    {% for club in clubs %}
+                    <option value="{{ club["name"] }}">{{ club["name"] }}</option>
+                    {% endfor %}
+                </select>
+            </div>
         </div>
-        <div class="form-group">
-            <input class="form-control" name="description" id="description" placeholder="Describe Your Event" type="text">
+        <div class="form-group row">
+            <label for="description" class="col-sm-2 col-form-label">Description</label>
+            <div class="col-sm-10">
+                <input class="form-control" name="description" id="description" placeholder="Describe Your Event" type="text">
+            </div>
         </div>
-        <div class="form-group">
-            <input class="form-control" name="picture" id="picture" type="file">
+        <div class="form-group row">
+            <label for="picture" class="col-sm-2 col-form-label">Upload A Picture</label>
+            <div class="col-sm-10">
+                <input class="form-control-file" name="picture" id="picture" type="file">
+            </div>
         </div>
-        <div class="form-group">
-            <select class="form-control" name="tags" id="tags">
-                <option value="" selected disabled>Select Tags for Your Event</option>
-                <option value="sampletag">Sample Tag</option>
-                <option value="sampletag2">Sample Tag 2</option>
-            </select>
+        <fieldset class="form-group">
+            <div class="row">
+                <legend class="col-sm-2 col-form-label">Tags</legend>
+                <div class="col-sm-10">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="art" id="art" value="art">
+                        <label class="form-check-label" for="art">
+                            Art
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="business" id="business" value="business">
+                        <label class="form-check-label" for="business">
+                            Business
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </fieldset>
+        <div class="form-row">
+            <label for="startmonth" class="col-sm-2 col-form-label">Starting Date</label>
+            <div class="col-md-2">
+                <select class="form-control" name="startmonth" id="startmonth">
+                    <option value="" selected disabled>Month</option>
+                    <option value="1">January</option>
+                    <option value="2">February</option>
+                    <option value="3">March</option>
+                    <option value="4">April</option>
+                    <option value="5">May</option>
+                    <option value="6">June</option>
+                    <option value="7">July</option>
+                    <option value="8">August</option>
+                    <option value="9">September</option>
+                    <option value="10">October</option>
+                    <option value="11">November</option>
+                    <option value="12">December</option>
+                </select>
+            </div>
+            <div class="col-md-1">
+                <select class="form-control" name="startday" id="startday">
+                    <option value="" selected disabled>Day</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                    <option value="11">11</option>
+                    <option value="12">12</option>
+                    <option value="13">13</option>
+                    <option value="14">14</option>
+                    <option value="15">15</option>
+                    <option value="16">16</option>
+                    <option value="17">17</option>
+                    <option value="18">18</option>
+                    <option value="19">19</option>
+                    <option value="20">20</option>
+                    <option value="21">21</option>
+                    <option value="22">22</option>
+                    <option value="23">23</option>
+                    <option value="24">24</option>
+                    <option value="25">25</option>
+                    <option value="26">26</option>
+                    <option value="27">27</option>
+                    <option value="28">28</option>
+                    <option value="29">29</option>
+                    <option value="30">30</option>
+                    <option value="31">31</option>
+                </select>
+            </div>
+            <div class="col-md-1">
+                <select class="form-control" name="startyear" id="startyear">
+                    <option value="" selected disabled>Year</option>
+                    <option value="2018">2018</option>
+                    <option value="2019">2019</option>
+                </select>
+            </div>
         </div>
-        <div class="form-group">
-            <input class="form-control" name="date" placeholder="Date" type="text">
+        <br>
+        <div class="form-row">
+            <label for="endmonth" class="col-sm-2 col-form-label">Ending Date</label>
+            <div class="col-md-2">
+                <select class="form-control" name="endmonth" id="endmonth">
+                    <option value="" selected disabled>Month</option>
+                    <option value="1">January</option>
+                    <option value="2">February</option>
+                    <option value="3">March</option>
+                    <option value="4">April</option>
+                    <option value="5">May</option>
+                    <option value="6">June</option>
+                    <option value="7">July</option>
+                    <option value="8">August</option>
+                    <option value="9">September</option>
+                    <option value="10">October</option>
+                    <option value="11">November</option>
+                    <option value="12">December</option>
+                </select>
+            </div>
+            <div class="col-md-1">
+                <select class="form-control" name="endday" id="endday">
+                    <option value="" selected disabled>Day</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                    <option value="11">11</option>
+                    <option value="12">12</option>
+                    <option value="13">13</option>
+                    <option value="14">14</option>
+                    <option value="15">15</option>
+                    <option value="16">16</option>
+                    <option value="17">17</option>
+                    <option value="18">18</option>
+                    <option value="19">19</option>
+                    <option value="20">20</option>
+                    <option value="21">21</option>
+                    <option value="22">22</option>
+                    <option value="23">23</option>
+                    <option value="24">24</option>
+                    <option value="25">25</option>
+                    <option value="26">26</option>
+                    <option value="27">27</option>
+                    <option value="28">28</option>
+                    <option value="29">29</option>
+                    <option value="30">30</option>
+                    <option value="31">31</option>
+                </select>
+            </div>
+            <div class="col-md-1">
+                <select class="form-control" name="endyear" id="endyear">
+                    <option value="" selected disabled>Year</option>
+                    <option value="2018">2018</option>
+                    <option value="2019">2019</option>
+                </select>
+            </div>
         </div>
-        <div class="form-group">
-            <input class="form-control" name="time" placeholder="Time" type="text">
+        <br>
+        <div class="form-row">
+            <label for="starthour" class="col-sm-2 col-form-label">Start Time</label>
+            <div class="col-md-1">
+                <select class="form-control" name="starthour" id="starthour">
+                    <option value="" selected disabled>Hour</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                    <option value="11">11</option>
+                    <option value="12">12</option>
+                </select>
+            </div>
+            <div class="col-md-1.5">
+                <select class="form-control" name="startminutes" id="startminutes">
+                    <option value="" selected disabled>Minutes</option>
+                    <option value="00">00</option>
+                    <option value="05">05</option>
+                    <option value="10">10</option>
+                    <option value="15">15</option>
+                    <option value="20">20</option>
+                    <option value="25">25</option>
+                    <option value="30">30</option>
+                    <option value="35">35</option>
+                    <option value="40">40</option>
+                    <option value="45">45</option>
+                    <option value="50">50</option>
+                    <option value="55">55</option>
+                </select>
+            </div>
+            <div class="col-md-1.5">
+                <select class="form-control" name="startampm" id="startampm">
+                    <option value="" selected disabled>AM/PM</option>
+                    <option value="am">AM</option>
+                    <option value="pm">PM</option>
+                </select>
+            </div>
         </div>
+        <br>
+        <div class="form-row">
+            <label for="endhour" class="col-sm-2 col-form-label">End Time</label>
+            <div class="col-md-1">
+                <select class="form-control" name="endhour" id="endhour">
+                    <option value="" selected disabled>Hour</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                    <option value="11">11</option>
+                    <option value="12">12</option>
+                </select>
+            </div>
+            <div class="col-md-1.5">
+                <select class="form-control" name="endminutes" id="endminutes">
+                    <option value="" selected disabled>Minutes</option>
+                    <option value="00">00</option>
+                    <option value="05">05</option>
+                    <option value="10">10</option>
+                    <option value="15">15</option>
+                    <option value="20">20</option>
+                    <option value="25">25</option>
+                    <option value="30">30</option>
+                    <option value="35">35</option>
+                    <option value="40">40</option>
+                    <option value="45">45</option>
+                    <option value="50">50</option>
+                    <option value="55">55</option>
+                </select>
+            </div>
+            <div class="col-md-1.5">
+                <select class="form-control" name="endampm" id="endampm">
+                    <option value="" selected disabled>AM/PM</option>
+                    <option value="am">AM</option>
+                    <option value="pm">PM</option>
+                </select>
+            </div>
+        </div>
+        <br>
         <button class="btn btn-primary" type="submit">Create Event</button>
     </form>
 {% endblock %}

@@ -60,3 +60,119 @@ main img
 {
     font-size: 50px;
 }
+
+.page-title
+{
+    font-weight: bold;
+}
+
+#eventname
+{
+    width: 100%;
+}
+
+#club
+{
+    width: 100%;
+}
+
+#description
+{
+    width: 100%;
+}
+
+#picture
+{
+    width: 100%;
+}
+
+#tags
+{
+    width: 100%;
+}
+
+#date
+{
+    width: 100%;
+}
+
+#time
+{
+    width: 100%;
+}
+
+#startmonth
+{
+    width: 100%;
+}
+
+#startday
+{
+    width: 100%;
+}
+
+#startyear
+{
+    width: 100%;
+}
+
+#endmonth
+{
+    width: 100%;
+}
+
+#endday
+{
+    width: 100%;
+}
+
+#endyear
+{
+    width: 100%;
+}
+
+#createevent
+{
+    width: 100%;
+}
+
+#starthour
+{
+    width: 100%;
+}
+
+#startminutes
+{
+    width: 100%;
+}
+
+#startam-pm
+{
+    width: 100%;
+}
+
+#endhour
+{
+    width: 100%;
+}
+
+#endminutes
+{
+    width: 100%;
+}
+
+#endam-pm
+{
+    width: 100%;
+}
+
+.col-form-label
+{
+    text-align: left;
+    font-weight: bold;
+}
+
+.form-check
+{
+    text-align: left;
+}
