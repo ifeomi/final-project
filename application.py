@@ -249,8 +249,7 @@ def createevent():
         club_id = db.execute("SELECT club_id FROM clubs WHERE name=:club", club=club)
 
         # Return relevant apology is user didn't input one variable
-        if not eventname:
-            title = request.form.get("eventname")
+        title = request.form.get("eventname")
         if not title:
             return apology("Missing event name!")
         club = request.form.get("club")
@@ -324,15 +323,15 @@ def createevent():
         service = build('calendar', 'v3', http=creds.authorize(Http()))
 
         event = {
-            'summary': eventname,
+            'summary': 'hi',
             'location': '800 Howard St., San Francisco, CA 94103',
             'description': 'A chance to hear more about Google\'s developer products.',
             'start': {
-                'dateTime': '2015-05-28T09:00:00-07:00',
+                'dateTime': '2018-011-28T010:00:00-07:00',
                 'timeZone': 'America/Los_Angeles',
             },
             'end': {
-                'dateTime': '2015-05-28T17:00:00-07:00',
+                'dateTime': '2018-011-28T17:00:00-07:00',
                 'timeZone': 'America/Los_Angeles',
             },
             'recurrence': [
