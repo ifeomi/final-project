@@ -262,13 +262,14 @@ def createevent():
             picture = request.files["picture"].read().decode("utf-8")
         except Exception:
             apology("Invalid Picture")
-        filesplit = picture.split(".")
-        fileend = filesplit[1]
-        nospaces = eventname.replace(" ", "")
-        filename = nospaces + "." + fileend
-        picturefile = open(filename, "w")
-        picturefile.write(picture)
-        picturefile.close()
+        if picture:
+            filesplit = picture.split(".")
+            fileend = filesplit[1]
+            nospaces = eventname.replace(" ", "")
+            filename = nospaces + "." + fileend
+            picturefile = open(filename, "w")
+            picturefile.write(picture)
+            picturefile.close()
 
         art = request.form.get("art")
         business = request.form.get("business")
@@ -331,7 +332,6 @@ def createevent():
 
         db.execute("INSERT INTO events (club_id, title, description, picture, tags, date, time, location) VALUES(:club_id, :title, :description, :picture, :tags, :date, :time, :location)",
         club_id=club_id[0]["club_id"], title=title, description=description, picture=picture, tags=rejoin(tags), date=startday, time=starthour, location = location)
-
         SCOPES = 'https://www.googleapis.com/auth/calendar'
         # The file token.json stores the user's access and refresh tokens, and is
         # created automatically when the authorization flow completes for the first
@@ -342,7 +342,7 @@ def createevent():
             flow = client.flow_from_clientsecrets('credentials.json', SCOPES)
             creds = tools.run_flow(flow, store)
         service = build('calendar', 'v3', http=creds.authorize(Http()))
-
+        print ("HEREEEEeeeeeeeeeeeeeeeee")
         event = {
             'summary': title,
             'location': location,
