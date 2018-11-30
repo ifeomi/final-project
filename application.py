@@ -305,10 +305,15 @@ def createevent():
         endampm = request.form.get("endampm")
         if not endampm:
             return apology("You must provide an ending time (am/pm)!")
-
-        date = startmonth + " " + startday + ", " + startyear + "-" + endmonth + " " + endday + ", " + endyear
-        time = starthour + ":" + startminutes + "" + startampm + "-" + endhour + ":" + endminutes + "" + endampm
-
+        if startampm == "AM":
+            starthourmilitary = int(starthour) + 12
+            starthour = str(starthourmilitary)
+        if endampm == "AM":
+            endhourmilitary = int(endhour) + 12
+            endhour = str(endhourmilitary)
+        startdateandtime = startyear + "-" + startmonth + "-" + startday + "T" + starthour + ":" + startminutes + ":00-04:00"
+        enddateandtime = endyear + "-" + endmonth + "-" + endday + "T" + endhour + ":" + endminutes + ":00-04:00"
+        date = startdateandtime + "-" + enddateandtime
         if art == None:
             art = ""
         if business == None:
@@ -332,24 +337,17 @@ def createevent():
         service = build('calendar', 'v3', http=creds.authorize(Http()))
 
         event = {
-            'summary': 'hi',
-            'location': '800 Howard St., San Francisco, CA 94103',
-            'description': 'A chance to hear more about Google\'s developer products.',
+            'summary': title,
+            'location': location,
+            'description': club,
             'start': {
-                'dateTime': '2018-011-28T010:00:00-07:00',
-                'timeZone': 'America/Los_Angeles',
+                'dateTime': startdateandtime,
+                'timeZone': 'America/New_York',
             },
             'end': {
-                'dateTime': '2018-011-28T17:00:00-07:00',
-                'timeZone': 'America/Los_Angeles',
+                'dateTime': enddateandtime,
+                'timeZone': 'America/New_York',
             },
-            'recurrence': [
-                'RRULE:FREQ=DAILY;COUNT=2'
-            ],
-            'attendees': [
-                {'email': 'lpage@example.com'},
-                {'email': 'sbrin@example.com'},
-            ],
             'reminders': {
                 'useDefault': False,
                 'overrides': [
@@ -358,6 +356,7 @@ def createevent():
                 ],
             },
         }
+
         event = service.events().insert(calendarId='primary', body=event).execute()
         print('Event created: %s' % (event.get('htmlLink')))
         return render_template("calendar.html")
