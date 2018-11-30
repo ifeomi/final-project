@@ -226,8 +226,9 @@ def clubs():
 
 @app.route("/search")
 def search():
-    q = request.args.get("q")
-    results = db.execute("SELECT * FROM clubs WHERE name LIKE '%:query%", query=q)
+    q = "'%" + request.args.get("q") + "%'"
+    print(q)
+    results = db.execute("SELECT * FROM clubs WHERE name LIKE " + q)
     return jsonify(results)
 
 @app.route("/calendar", methods=["GET", "POST"])
@@ -271,8 +272,8 @@ def createevent():
             picturefile.write(picture)
             picturefile.close()
 
-        art = request.form.get("art")
-        business = request.form.get("business")
+        if not picture:
+            filename = "NULL"
 
         location = request.form.get("location")
         if not location:
@@ -321,6 +322,7 @@ def createevent():
             endhour = str(endhourmilitary)
         startdateandtime = startyear + "-" + startmonth + "-" + startday + "T" + starthour + ":" + startminutes + ":00-04:00"
         enddateandtime = endyear + "-" + endmonth + "-" + endday + "T" + endhour + ":" + endminutes + ":00-04:00"
+
         tags = []
         for tag in tagNames:
             value = request.form.get(tag)
@@ -328,6 +330,7 @@ def createevent():
                 tags.append(tag)
         print("tags")
         print(tags)
+
         club_id = db.execute("SELECT club_id FROM clubs WHERE name=:club", club=club)
 
         db.execute("INSERT INTO events (club_id, title, description, picture, tags, date, time, location) VALUES(:club_id, :title, :description, :picture, :tags, :date, :time, :location)",
