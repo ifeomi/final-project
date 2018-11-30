@@ -255,13 +255,16 @@ def createevent():
             picture = request.files["picture"].read().decode("utf-8")
         except Exception:
             apology("Invalid Picture")
-        filesplit = picture.split(".")
-        fileend = filesplit[1]
-        nospaces = eventname.replace(" ", "")
-        filename = nospaces + "." + fileend
-        picturefile = open(filename, "w")
-        picturefile.write(picture)
-        picturefile.close()
+        if picture:
+            filesplit = picture.split(".")
+            fileend = filesplit[1]
+            nospaces = eventname.replace(" ", "")
+            filename = nospaces + "." + fileend
+            picturefile = open(filename, "w")
+            picturefile.write(picture)
+            picturefile.close()
+        if not picture:
+            filename = "NULL"
 
         art = request.form.get("art")
         business = request.form.get("business")
@@ -313,7 +316,8 @@ def createevent():
             endhour = str(endhourmilitary)
         startdateandtime = startyear + "-" + startmonth + "-" + startday + "T" + starthour + ":" + startminutes + ":00-04:00"
         enddateandtime = endyear + "-" + endmonth + "-" + endday + "T" + endhour + ":" + endminutes + ":00-04:00"
-        date = startdateandtime + "-" + enddateandtime
+        date = startmonth
+        time = starthour
         if art == None:
             art = ""
         if business == None:
