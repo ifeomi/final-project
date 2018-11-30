@@ -166,6 +166,11 @@ main img
     width: 100%;
 }
 
+#location
+{
+    width: 100%;
+}
+
 .col-form-label
 {
     text-align: left;
