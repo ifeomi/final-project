@@ -329,8 +329,8 @@ def createevent():
         print(tags)
         club_id = db.execute("SELECT club_id FROM clubs WHERE name=:club", club=club)
 
-        db.execute("INSERT INTO events (club_id, title, description, picture, tags, date, time) VALUES(:club_id, :title, :description, :picture, :tags, :date, :time)",
-        club_id=club_id[0]["club_id"], title=title, description=description, picture=picture, tags=rejoin(tags), date=startday, time=starthour)
+        db.execute("INSERT INTO events (club_id, title, description, picture, tags, date, time, location) VALUES(:club_id, :title, :description, :picture, :tags, :date, :time, :location)",
+        club_id=club_id[0]["club_id"], title=title, description=description, picture=picture, tags=rejoin(tags), date=startday, time=starthour, location = location)
 
         SCOPES = 'https://www.googleapis.com/auth/calendar'
         # The file token.json stores the user's access and refresh tokens, and is
