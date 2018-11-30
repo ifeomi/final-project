@@ -45,8 +45,7 @@ app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
 # Configure CS50 Library to use SQLite database
-db = SQL("sqlite:///finance.db")
-club_db = SQL("sqlite:///ClubPub.db")
+db = SQL("sqlite:///ClubPub.db")
 
 
 @app.route("/")
@@ -61,40 +60,8 @@ def index():
         # eventdate = time.strptime(event["date"], "%m %d, %Y")
         # if eventdate < currentdate:
             # club_db.execute("DELETE FROM events WHERE event_id=:event_id", event_id=event_id)
-    events = club_db.execute("SELECT * FROM events")
+    events = db.execute("SELECT * FROM events")
     return render_template("index.html", events=events)
-
-
-@app.route("/buy", methods=["GET", "POST"])
-@login_required
-def buy():
-    if request.method == "POST":
-        symbol = request.form.get("symbol")
-        shares = request.form.get("shares")
-
-        if not symbol:
-            return apology("Invalid symbol")
-        elif not lookup(symbol):
-            return apology("Symbol doesn't exist")
-        elif not shares.isdigit():
-            return apology("Shares must be an integer")
-
-        shares = int(shares)
-        price = lookup(symbol)["price"]
-
-        if shares < 1:
-            return apology("Shares must be greater than or equal to 1")
-        rows = db.execute("SELECT cash FROM users WHERE id = :user_id", user_id=session["user_id"])
-        cash = float(rows[0]["cash"]) - shares * price
-        if cash < 0:
-            return apology("Not enough cash for the transaction")
-        else:
-            db.execute("UPDATE users SET cash = :cash WHERE id = :user_id",
-            cash=cash, user_id=session["user_id"])
-            result = db.execute("INSERT INTO transactions (symbol, shares, price, user_id) VALUES(:symbol, :shares, :price, :user_id)", symbol=symbol, shares=shares, price=price, user_id=session["user_id"])
-        return redirect("/")
-    else:
-        return render_template("buy.html")
 
 
 @app.route("/check", methods=["GET"])
@@ -255,7 +222,7 @@ def userinfo():
 @login_required
 def clubs():
     if request.method == "GET":
-        clubs = club_db.execute("SELECT * FROM clubs")
+        clubs = db.execute("SELECT * FROM clubs")
         return render_template("clubs.html", clubs=clubs)
 
 @app.route("/calendar", methods=["GET", "POST"])
@@ -325,9 +292,9 @@ def createevent():
             business = ""
         tags = art + ", " + business
 
-        club_id = club_db.execute("SELECT club_id FROM clubs WHERE name=:club", club=club)
+        club_id = db.execute("SELECT club_id FROM clubs WHERE name=:club", club=club)
 
-        club_db.execute("INSERT INTO events (club_id, title, description, picture, tags, date, time) VALUES(:club_id, :title, :description, :picture, :tags, :date, :time)",
+        db.execute("INSERT INTO events (club_id, title, description, picture, tags, date, time) VALUES(:club_id, :title, :description, :picture, :tags, :date, :time)",
         club_id=club_id[0]["club_id"], title=title, description=description, picture=picture, tags=tags, date=date, time=time)
 
         SCOPES = 'https://www.googleapis.com/auth/calendar'
@@ -378,7 +345,7 @@ def createevent():
             # return render_template("createevent.html", clubs=clubs)
         # else:
             # return apology("You can not access this page!")
-        clubs = club_db.execute("SELECT name FROM clubs")
+        clubs = db.execute("SELECT name FROM clubs")
         return render_template("createevent.html", clubs=clubs)
 
 
