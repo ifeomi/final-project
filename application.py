@@ -186,6 +186,8 @@ def register():
         username = request.form.get("username")
         password = request.form.get("password")
         confirmation = request.form.get("confirmation")
+        email = request.form.get("email")
+        name = request.form.get("name")
 
         # Return relevant apology is user didn't input one variable
         if not username:
@@ -198,8 +200,8 @@ def register():
             return apology("Passwords do not match")
 
         # If insertion returns null, then username must be taken
-        result = db.execute("INSERT INTO users (username, hash) VALUES(:username, :hashed)",
-        username=username, hashed=generate_password_hash(password))
+        result = db.execute("INSERT INTO users (username, hash, name, email) VALUES(:username, :hashed, :name, :email)",
+        username=username, hashed=generate_password_hash(password), name=name, email=email)
         if not result:
             return apology("Username is taken")
 
@@ -256,6 +258,7 @@ def createevent():
             return apology("Missing club!")
         description = request.form.get("description")
         picture = request.form.get("picture")
+
         art = request.form.get("art")
         business = request.form.get("business")
         startmonth = request.form.get("startmonth")
