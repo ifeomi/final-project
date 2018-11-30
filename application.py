@@ -226,8 +226,9 @@ def clubs():
 
 @app.route("/search")
 def search():
-    q = request.args.get("q")
-    results = db.execute("SELECT * FROM clubs WHERE name LIKE '%:query%", query=q)
+    q = "'%" + request.args.get("q") + "%'"
+    print(q)
+    results = db.execute("SELECT * FROM clubs WHERE name LIKE " + q)
     return jsonify(results)
 
 @app.route("/calendar", methods=["GET", "POST"])
