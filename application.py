@@ -247,6 +247,10 @@ def createevent():
 
         art = request.form.get("art")
         business = request.form.get("business")
+
+        location = request.form.get("location")
+        if not location:
+            return apology("You must provide a location!")
         startmonth = request.form.get("startmonth")
         if not startmonth:
             return apology("You must provide a starting date (month)!")
