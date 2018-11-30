@@ -269,7 +269,8 @@ def createevent():
         description = request.form.get("description")
         picture = request.form.get("picture")
         tags = request.form.get("tags")
-        dateandtime = request.form.get("dateandtime")
+        startdateandtime = request.form.get("startdateandtime")
+        enddateandtime = request.form.get("enddateandtime")
 
         club_id = db.execute("SELECT club_id FROM clubs WHERE name=:club", club=club)
 
