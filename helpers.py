@@ -55,7 +55,10 @@ def lookup(symbol):
     except (KeyError, TypeError, ValueError):
         return None
 
+def parse(text):
+    """Splits SQL text into list. Text should be delimited by a comma."""
+    return text.split(',')
 
-def usd(value):
-    """Format value as USD."""
-    return f"${value:,.2f}"
+def rejoin(textList):
+    """Rejoins list into comma-delimited string for storage in database."""
+    return ','.join(textList)
