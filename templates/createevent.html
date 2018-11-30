@@ -43,18 +43,14 @@
             <div class="row">
                 <legend class="col-sm-2 col-form-label">Tags</legend>
                 <div class="col-sm-10">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" name="art" id="art" value="art">
-                        <label class="form-check-label" for="art">
-                            Art
-                        </label>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" name="business" id="business" value="business">
-                        <label class="form-check-label" for="business">
-                            Business
-                        </label>
-                    </div>
+                    {% for tag in tags %}
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name={{tag}} id={{tag}} value={{tag}}>
+                            <label class="form-check-label" for={{tag}}>
+                                {{tag}}
+                            </label>
+                        </div>
+                    {% endfor %}
                 </div>
             </div>
         </fieldset>

@@ -35,6 +35,9 @@ def after_request(response):
     return response
 
 
+# Custom filter
+app.jinja_env.filters["usd"] = usd
+
 # Configure session to use filesystem (instead of signed cookies)
 app.config["SESSION_FILE_DIR"] = mkdtemp()
 app.config["SESSION_PERMANENT"] = False
@@ -233,7 +236,6 @@ def calendar():
 @app.route("/createevent", methods=["GET", "POST"])
 @login_required
 def createevent():
-    tagNames = ["Academic", "Art", "Business", "Club sports", "College life", "Community Service", "Cultural", "Dance", "Free Food","Gender and Sexuality", "Government and Politics", "Health", "House Committee", "Media", "Offices", "Peer Counseling", "Performing Arts", "Pre-professional", "Publications", "Religious", "Social", "Special interests", "STEM", "Women’s Initiatives"]
     if request.method == "POST":
         # Store inputs in variables for easier access
         eventname = request.form.get("eventname")
@@ -241,6 +243,8 @@ def createevent():
         description = request.form.get("description")
         picture = request.form.get("picture")
         tags = request.form.get("tags")
+        startdateandtime = request.form.get("startdateandtime")
+        enddateandtime = request.form.get("enddateandtime")
 
         club_id = db.execute("SELECT club_id FROM clubs WHERE name=:club", club=club)
 
@@ -296,25 +300,20 @@ def createevent():
         endampm = request.form.get("endampm")
         if not endampm:
             return apology("You must provide an ending time (am/pm)!")
-        if startampm == "AM":
-            starthourmilitary = int(starthour) + 12
-            starthour = str(starthourmilitary)
-        if endampm == "AM":
-            endhourmilitary = int(endhour) + 12
-            endhour = str(endhourmilitary)
-        startdateandtime = startyear + "-" + startmonth + "-" + startday + "T" + starthour + ":" + startminutes + ":00-04:00"
-        enddateandtime = endyear + "-" + endmonth + "-" + endday + "T" + endhour + ":" + endminutes + ":00-04:00"
-        tags = []
-        for tag in tagNames:
-            value = request.form.get(tag)
-            if value != None:
-                tags.append(tag)
-        print("tags")
-        print(tags)
+
+        date = startmonth + " " + startday + ", " + startyear + "-" + endmonth + " " + endday + ", " + endyear
+        time = starthour + ":" + startminutes + "" + startampm + "-" + endhour + ":" + endminutes + "" + endampm
+
+        if art == None:
+            art = ""
+        if business == None:
+            business = ""
+        tags = art + ", " + business
+
         club_id = db.execute("SELECT club_id FROM clubs WHERE name=:club", club=club)
 
         db.execute("INSERT INTO events (club_id, title, description, picture, tags, date, time) VALUES(:club_id, :title, :description, :picture, :tags, :date, :time)",
-        club_id=club_id[0]["club_id"], title=title, description=description, picture=picture, tags=rejoin(tags), date=startday, time=starthour)
+        club_id=club_id[0]["club_id"], title=title, description=description, picture=picture, tags=tags, date=date, time=time)
 
         SCOPES = 'https://www.googleapis.com/auth/calendar'
         # The file token.json stores the user's access and refresh tokens, and is
@@ -328,17 +327,24 @@ def createevent():
         service = build('calendar', 'v3', http=creds.authorize(Http()))
 
         event = {
-            'summary': title,
-            'location': location,
-            'description': club,
+            'summary': 'Google I/O 2015',
+            'location': '800 Howard St., San Francisco, CA 94103',
+            'description': 'A chance to hear more about Google\'s developer products.',
             'start': {
-                'dateTime': startdateandtime,
-                'timeZone': 'America/New_York',
+                'dateTime': '2018-05-28T09:00:00-07:00',
+                'timeZone': 'Africa/Addis_Ababa',
             },
             'end': {
-                'dateTime': enddateandtime,
-                'timeZone': 'America/New_York',
+                'dateTime': '2018-05-28T17:00:00-07:00',
+                'timeZone': 'Africa/Addis_Ababa',
             },
+            'recurrence': [
+            'RRULE:FREQ=DAILY;COUNT=2'
+            ],
+            'attendees': [
+                {'email': 'lpage@example.com'},
+                {'email': 'sbrin@example.com'},
+              ],
             'reminders': {
                 'useDefault': False,
                 'overrides': [
@@ -359,7 +365,7 @@ def createevent():
         # else:
             # return apology("You can not access this page!")
         clubs = db.execute("SELECT name FROM clubs")
-        return render_template("createevent.html", clubs=clubs, tags=tagNames)
+        return render_template("createevent.html", clubs=clubs)
 
 
 def errorhandler(e):
