@@ -314,7 +314,6 @@ def createevent():
             endhour = str(endhourmilitary)
         startdateandtime = startyear + "-" + startmonth + "-" + startday + "T" + starthour + ":" + startminutes + ":00-04:00"
         enddateandtime = endyear + "-" + endmonth + "-" + endday + "T" + endhour + ":" + endminutes + ":00-04:00"
-<<<<<<< HEAD
         tags = []
         for tag in tagNames:
             value = request.form.get(tag)
@@ -326,19 +325,6 @@ def createevent():
 
         db.execute("INSERT INTO events (club_id, title, description, picture, tags, date, time) VALUES(:club_id, :title, :description, :picture, :tags, :date, :time)",
         club_id=club_id[0]["club_id"], title=title, description=description, picture=picture, tags=rejoin(tags), date=startday, time=starthour)
-=======
-        date = startdateandtime + "-" + enddateandtime
-        if art == None:
-            art = ""
-        if business == None:
-            business = ""
-        tags = art + ", " + business
-
-        club_id = db.execute("SELECT club_id FROM clubs WHERE name=:club", club=club)
-
-        db.execute("INSERT INTO events (club_id, title, description, picture, tags, date, time, location) VALUES(:club_id, :title, :description, :picture, :tags, :date, :time, :location)",
-        club_id=club_id[0]["club_id"], title=title, description=description, picture=filename, tags=tags, date=date, time=time, location=location)
->>>>>>> edd013372b8ab8e3b1c50c7a8619f2cc30297003
 
         SCOPES = 'https://www.googleapis.com/auth/calendar'
         # The file token.json stores the user's access and refresh tokens, and is
