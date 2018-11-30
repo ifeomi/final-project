@@ -246,6 +246,7 @@ def createevent():
             return apology("Missing club!")
         description = request.form.get("description")
         picture = request.form.get("picture")
+
         art = request.form.get("art")
         business = request.form.get("business")
         startmonth = request.form.get("startmonth")
