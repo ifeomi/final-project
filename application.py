@@ -321,7 +321,7 @@ def createevent():
         service = build('calendar', 'v3', http=creds.authorize(Http()))
 
         event = {
-            'summary': 'Google I/O 2015',
+            'summary': eventname,
             'location': '800 Howard St., San Francisco, CA 94103',
             'description': 'A chance to hear more about Google\'s developer products.',
             'start': {
