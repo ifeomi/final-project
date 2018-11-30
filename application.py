@@ -224,6 +224,12 @@ def clubs():
         clubs = db.execute("SELECT * FROM clubs")
         return render_template("clubs.html", clubs=clubs)
 
+@app.route("/search")
+def search():
+    q = request.args.get("q")
+    results = db.execute("SELECT * FROM clubs WHERE name LIKE '%:query%", query=q)
+    return jsonify(results)
+
 @app.route("/calendar", methods=["GET", "POST"])
 @login_required
 def calendar():
