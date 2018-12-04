@@ -231,16 +231,64 @@ def search():
     results = db.execute("SELECT * FROM clubs WHERE name LIKE " + q)
     return jsonify(results)
 
+
 @app.route("/calendar", methods=["GET", "POST"])
 @login_required
 def calendar():
     return render_template("calendar.html")
 
 
+@app.route("/eventsearch", methods=["GET"])
+@login_required
+def searchevent():
+    tagNames = ["Academic", "Art", "Business", "Club Sports", "College Life", "Community Service", "Cultural", "Dance", "Free Food","Gender and Sexuality", "Government and Politics", "Health", "House Committee", "Media", "Offices", "Peer Counseling", "Performing Arts", "Pre-Professional", "Publications", "Religious", "Social", "Special Interests", "STEM", "Women’s Initiatives"]
+    clubs = db.execute("SELECT name FROM clubs")
+    return render_template("eventsearch.html", tags=tagNames, clubs=clubs)
+
+@app.route("/eventsearchtag")
+@login_required
+def eventsearchtag():
+    tag = request.args.get("tag")
+    taggedevents = []
+    events = db.execute("SELECT * FROM events")
+    for event in events:
+        eventtags = event["tags"]
+        eventtags = parse(eventtags)
+        taggedevent = {}
+        if tag in eventtags:
+            taggedevent.update(event)
+            taggedevents.append(taggedevent)
+    return jsonify(taggedevents)
+
+
+@app.route("/eventsearchclub")
+@login_required
+def eventsearchclub():
+    club = request.args.get("club")
+    clubdata = db.execute("SELECT * FROM clubs WHERE name=:name", name=club)
+    clubevents = []
+    events = db.execute("SELECT * FROM events")
+    for event in events:
+        club_id = event["club_id"]
+        clubevent = {}
+        if club_id == clubdata[0]["club_id"]:
+            clubevent.update(event)
+            clubevents.append(clubevent)
+    return jsonify(clubevents)
+
+
+@app.route("/eventsearchtitle")
+@login_required
+def eventsearchtitle():
+    q = "'%" + request.args.get("q") + "%'"
+    results = db.execute("SELECT * FROM events WHERE title LIKE " + q)
+    return jsonify(results)
+
+
 @app.route("/createevent", methods=["GET", "POST"])
 @login_required
 def createevent():
-    tagNames = ["Academic", "Art", "Business", "Club sports", "College life", "Community Service", "Cultural", "Dance", "Free Food","Gender and Sexuality", "Government and Politics", "Health", "House Committee", "Media", "Offices", "Peer Counseling", "Performing Arts", "Pre-professional", "Publications", "Religious", "Social", "Special interests", "STEM", "Women’s Initiatives"]
+    tagNames = ["Academic", "Art", "Business", "Club Sports", "College Life", "Community Service", "Cultural", "Dance", "Free Food","Gender and Sexuality", "Government and Politics", "Health", "House Committee", "Media", "Offices", "Peer Counseling", "Performing Arts", "Pre-Professional", "Publications", "Religious", "Social", "Special Interests", "STEM", "Women’s Initiatives"]
     if request.method == "POST":
         # Store inputs in variables for easier access
         eventname = request.form.get("eventname")
@@ -334,7 +382,7 @@ def createevent():
         club_id = db.execute("SELECT club_id FROM clubs WHERE name=:club", club=club)
 
         db.execute("INSERT INTO events (club_id, title, description, picture, tags, date, time, location) VALUES(:club_id, :title, :description, :picture, :tags, :date, :time, :location)",
-        club_id=club_id[0]["club_id"], title=title, description=description, picture=picture, tags=rejoin(tags), date=startday, time=starthour, location = location)
+        club_id=club_id[0]["club_id"], title=title, description=description, picture=picture, tags=rejoin(tags), date=starthour, time=starthour, location = location)
         SCOPES = 'https://www.googleapis.com/auth/calendar'
         # The file token.json stores the user's access and refresh tokens, and is
         # created automatically when the authorization flow completes for the first
