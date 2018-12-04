@@ -301,7 +301,15 @@ def createevent():
         eventname = request.form.get("eventname")
         club = request.form.get("club")
         description = request.form.get("description")
-        picturename = request.form.get("picture")
+        pictureuploadcheck = request.form.get("pictureuploadcheck")
+        if pictureuploadcheck == "yes":
+            picture = request.files["picture"]
+            nospaces = eventname.replace(" ", "")
+            filename = nospaces + ".jpg"
+            picture.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            picturelink = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        else:
+            picturelink = ""
         tags = request.form.get("tags")
 
         club_id = db.execute("SELECT club_id FROM clubs WHERE name=:club", club=club)
@@ -314,16 +322,6 @@ def createevent():
         if not club:
             return apology("Missing club!")
         description = request.form.get("description")
-        if picturename:
-            picturereal = request.files["picture"]
-            nospaces = eventname.replace(" ", "")
-            filename = nospaces + ".jpg"
-            picturereal.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            picturelink = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-
-        if not picturename:
-            picturelink = ""
-
         location = request.form.get("location")
         if not location:
             return apology("You must provide a location!")
@@ -370,14 +368,14 @@ def createevent():
             endhourmilitary = int(endhour) + 12
             endhour = str(endhourmilitary)
 
-        permissions = db.execute("SELECT permissions FROM users WHERE id = :user_id",user_id=session["user_id"])
-        for i in range(len(parse(permissions[0]["permissions"]))):
-            if parse(permissions[0]["permissions"])[i] == club:
-                print(parse(permissions[0]["permissions"])[i])
-                print(club)
-                break
-            if i == len(parse(permissions[0]["permissions"]))-1:
-                return apology("Sorry, but you do not have permission to post for this club.")
+        # permissions = db.execute("SELECT permissions FROM users WHERE id = :user_id",user_id=session["user_id"])
+        # for i in range(len(parse(permissions[0]["permissions"]))):
+            # if parse(permissions[0]["permissions"])[i] == club:
+                # print(parse(permissions[0]["permissions"])[i])
+                # print(club)
+                # break
+            # if i == len(parse(permissions[0]["permissions"]))-1:
+                # return apology("Sorry, but you do not have permission to post for this club.")
 
         startdateandtime = startyear + "-" + startmonth + "-" + startday + "T" + starthour + ":" + startminutes + ":00-04:00"
         enddateandtime = endyear + "-" + endmonth + "-" + endday + "T" + endhour + ":" + endminutes + ":00-04:00"
@@ -394,6 +392,7 @@ def createevent():
 
         db.execute("INSERT INTO events (club_id, title, description, picture, tags, date, time, location) VALUES(:club_id, :title, :description, :picture, :tags, :date, :time, :location)",
         club_id=club_id[0]["club_id"], title=title, description=description, picture=picturelink, tags=rejoin(tags), date=date, time=time, location = location)
+
         SCOPES = 'https://www.googleapis.com/auth/calendar'
         # The file token.json stores the user's access and refresh tokens, and is
         # created automatically when the authorization flow completes for the first
