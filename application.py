@@ -185,6 +185,7 @@ def register():
         confirmation = request.form.get("confirmation")
         email = request.form.get("email")
         name = request.form.get("name")
+        permissions = request.form.getlist("permissions")
 
         # Return relevant apology is user didn't input one variable
         if not username:
@@ -197,8 +198,8 @@ def register():
             return apology("Passwords do not match")
 
         # If insertion returns null, then username must be taken
-        result = db.execute("INSERT INTO users (username, hash, name, email) VALUES(:username, :hashed, :name, :email)",
-        username=username, hashed=generate_password_hash(password), name=name, email=email)
+        result = db.execute("INSERT INTO users (username, hash, name, email, permissions) VALUES(:username, :hashed, :name, :email, :permissions)",
+        username=username, hashed=generate_password_hash(password), name=name, email=email, permissions=rejoin(permissions))
         if not result:
             return apology("Username is taken")
 
@@ -207,8 +208,10 @@ def register():
         session["user_id"] = rows[0]["id"]
         return redirect("/")
 
+        # Add permissions to user database
+
     else:
-        return render_template("register.html")
+        return render_template("register.html", clubs = db.execute("SELECT name FROM clubs"))
 
 
 
@@ -368,6 +371,16 @@ def createevent():
         if endampm == "AM":
             endhourmilitary = int(endhour) + 12
             endhour = str(endhourmilitary)
+
+        permissions = db.execute("SELECT permissions FROM users WHERE id = :user_id",user_id=session["user_id"])
+        for i in range(len(parse(permissions[0]["permissions"]))):
+            if parse(permissions[0]["permissions"])[i] == club:
+                print(parse(permissions[0]["permissions"])[i])
+                print(club)
+                break
+            if i == len(parse(permissions[0]["permissions"]))-1:
+                return apology("Sorry, but you do not have permission to post for this club.")
+
         startdateandtime = startyear + "-" + startmonth + "-" + startday + "T" + starthour + ":" + startminutes + ":00-04:00"
         enddateandtime = endyear + "-" + endmonth + "-" + endday + "T" + endhour + ":" + endminutes + ":00-04:00"
 
@@ -376,8 +389,6 @@ def createevent():
             value = request.form.get(tag)
             if value != None:
                 tags.append(tag)
-        print("tags")
-        print(tags)
 
         date = startmonth + "/" + startday + "/" + startyear + "-" + endmonth + "/" + endday + "/" + endyear
         time = starthour + ":" + startminutes + startampm + "-" + endhour + ":" + endminutes + endampm
@@ -418,7 +429,7 @@ def createevent():
 
         event = service.events().insert(calendarId='primary', body=event).execute()
         print('Event created: %s' % (event.get('htmlLink')))
-        return render_template("calendar.html")
+        return render_template("index.html")
     else:
         # userpermissions = club_db.execute("SELECT permissions FROM users WHERE id=:id", session["user_id"])
         # if userpermissions = True:

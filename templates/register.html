@@ -36,6 +36,20 @@
         <div class="form-group">
             <input class="form-control" name="confirmation" placeholder="Confirm password" type="password">
         </div>
+        <div>
+            <h5><font color="white">
+                Select the clubs that you are a member of:
+            <br>
+                (this will give you permission to post events for the club)
+            </font></h5>
+            <select multiple class="form-control" name="permissions" id="permissions">
+                <option value="" selected disabled>Begin typing to filter...</option>
+                {% for club in clubs %}
+                    <option value="{{ club["name"] }}">{{ club["name"] }}</option>
+                {% endfor %}
+                <option value="None">None</option>
+            </select>
+        </div>
         <button class="btn btn-primary" type="submit">Register</button>
     </form>
 {% endblock %}
