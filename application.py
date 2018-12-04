@@ -5,6 +5,7 @@ from httplib2 import Http
 from oauth2client import file, client, tools
 import os
 import math
+import smtplib
 from cs50 import SQL
 from flask import Flask, flash, jsonify, redirect, render_template, request, session
 from flask_session import Session
@@ -14,7 +15,12 @@ from werkzeug.security import check_password_hash, generate_password_hash
 import random
 import datetime
 import time
+import googleapiclient.discovery
+from googleapiclient.discovery import build
+from google.oauth2 import service_account
 
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 from helpers import login_required, parse, rejoin, send_email
 
@@ -104,7 +110,8 @@ def settings():
     # User reached route via get
     else:
         user = db.execute("SELECT * FROM users WHERE id = :user_id", user_id = session["user_id"])[0]
-        return render_template("settings.html", username = user["username"])
+        permissions = db.execute("SELECT permissions FROM users WHERE id = :user_id", user_id = session["user_id"])
+        return render_template("settings.html", username = user["username"], permissions = permissions)
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -176,6 +183,40 @@ def register():
             return render_template("error.html", message="Missing password confirmation")
         if password != confirmation:
             return render_template("error.html", message="Passwords do not match")
+
+        #sends permission email to club
+        if permissions != None:
+            server = smtplib.SMTP("smtp.gmail.com", 587)
+            server.starttls()
+            server.login("cs50projectchi@gmail.com", "carissahunterife")
+
+            # Create message container - the correct MIME type is multipart/alternative.
+            msg = MIMEMultipart('alternative')
+
+            # Create the body of the message (a plain-text and an HTML version).
+            text = "Hi!\nHow are you?\nHere is the link you wanted:\nhttp://www.python.org"
+            html = """\
+            <html>
+              <head></head>
+              <body>
+                <p>Hi!<br>
+                   How are you?<br>
+                   Here is the <a href="http://www.python.org">link</a> you wanted.
+                </p>
+              </body>
+            </html>
+            """
+            # Record the MIME types of both parts - text/plain and text/html.
+            part1 = MIMEText(text, 'plain')
+            part2 = MIMEText(html, 'html')
+
+            # Attach parts into message container.
+            # According to RFC 2046, the last part of a multipart message, in this case
+            # the HTML message, is best and preferred.
+            msg.attach(part1)
+            msg.attach(part2)
+
+            server.sendmail("cs50projectchi@gmail.com", "carissawu2009@gmail.com", msg.as_string())
 
         # If insertion returns null, then username must be taken
         result = db.execute("INSERT INTO users (username, hash, name, email, permissions) VALUES(:username, :hashed, :name, :email, :permissions)",
@@ -355,14 +396,14 @@ def createevent():
             endhourmilitary = int(endhour) + 12
             endhour = str(endhourmilitary)
 
-        # permissions = db.execute("SELECT permissions FROM users WHERE id = :user_id",user_id=session["user_id"])
-        # for i in range(len(parse(permissions[0]["permissions"]))):
-            # if parse(permissions[0]["permissions"])[i] == club:
-                # print(parse(permissions[0]["permissions"])[i])
-                # print(club)
-                # break
-            # if i == len(parse(permissions[0]["permissions"]))-1:
-                # return render_template("error.html", message="Sorry, but you do not have permission to post events for this club")
+        permissions = db.execute("SELECT permissions FROM users WHERE id = :user_id",user_id=session["user_id"])
+        for i in range(len(parse(permissions[0]["permissions"]))):
+            if parse(permissions[0]["permissions"])[i] == club:
+                print(parse(permissions[0]["permissions"])[i])
+                print(club)
+                break
+            if i == len(parse(permissions[0]["permissions"]))-1:
+                return render_template("error.html", message="Sorry, but you do not have permission to post events for this club")
 
         startdateandtime = startyear + "-" + startmonth + "-" + startday + "T" + starthour + ":" + startminutes + ":00-04:00"
         enddateandtime = endyear + "-" + endmonth + "-" + endday + "T" + endhour + ":" + endminutes + ":00-04:00"
@@ -380,16 +421,22 @@ def createevent():
         db.execute("INSERT INTO events (club_id, title, description, picture, tags, date, time, location) VALUES(:club_id, :title, :description, :picture, :tags, :date, :time, :location)",
         club_id=club_id[0]["club_id"], title=title, description=description, picture=picturelink, tags=rejoin(tags), date=date, time=time, location = location)
 
-        SCOPES = 'https://www.googleapis.com/auth/calendar'
         # The file token.json stores the user's access and refresh tokens, and is
         # created automatically when the authorization flow completes for the first
         # time.
+        """
         store = file.Storage('token.json')
         creds = store.get()
         if not creds or creds.invalid:
             flow = client.flow_from_clientsecrets('credentials.json', SCOPES)
             creds = tools.run_flow(flow, store)
         service = build('calendar', 'v3', http=creds.authorize(Http()))
+        """
+        SCOPES = ['https://www.googleapis.com/auth/calendar']
+        SERVICE_ACCOUNT_FILE = 'service.json'
+        credentials = service_account.Credentials.from_service_account_file(
+        SERVICE_ACCOUNT_FILE, scopes=SCOPES)
+        service = googleapiclient.discovery.build('calendar', 'v3', credentials=credentials)
         event = {
             'summary': title,
             'location': location,

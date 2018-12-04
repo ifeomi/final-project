@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "intrepid-pride-224519",
+  "private_key_id": "14b0c6bd64bc41c8fcc86506b82f0df54a5fd3ff",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDrDRuMdXiHhh97\n5JJpwCfi9sp7buzg9mPeOSWVd8srYhyidFT87DOtRSXwrHSxV6YXWJjBKiILH4OH\nE+koi+unpTtth++KubXzYpPTQMT9Ei3X2VdFlUikILZT/nTgvzbOamC9iWrah/DL\n8aPSoO2t+1g45zbQyHcOyk020mFndWAKH1WDQNARAR0uBM4HCsFOGCUzUvS3VAg3\nnHI+qXOvpD/eXef+DFx09HtCeNkshpAoDpgYYTjQVB7dLMUxD+T9JtpDGYcwbonS\noW9Ocn7RYx3PbZrfBGKKgqbVkUtt9F+lNrfOy7KnLdpC7AGI5Gr9tWUZ3i9OguFQ\n2lOhrGCFAgMBAAECggEAUuBCw+IRdttsE29yzlWh2q1AlIf2fpVxfgOxREPCP5Au\n33rcEnen+uKEL5lm5batSdMDvSwBZ+GbKw/yqEi5dNlWHFcPN18mj+PEknpmWoLD\n5jTsSA0MWU5tay0vgaT6CorIhFvE8Lt4xDf1lskGNM+H+jxQAAqGrBDZa8h+7o5v\npDKMlzriY30XEDb6qk7tMszeU0/IIczP7c/5fcupqfrxh7KttmNcrDXZ3y2Jsl5J\nmZ1K+cF2wisL7rntEqBzR39B0oLKUseIekHLm+LLjjQ4VGA4RCwIzNilr9tRlGQC\nOzlgdEAP9CkfNH6UM5DiyzwiZXmu0beaokcm9HobCwKBgQD6A5zNcDJ1X9ic8wAp\nspZk6bU4TQbsY1GOeaZp8gYRyZshXN9Xu9fTkALDtzP8SuOo6Vy3gCOOAP2JYlXq\nJtNW9t+kKuwPO4LvPXSSCi1qvJImksl5Afj6dyX0idzL/CAnYUgSl448bsslE5jx\ns1KuUKahlHeraFX26egdIgstDwKBgQDwrcjM3T9Qp/rSsliJTk4LmTmvB2ND3Sto\nnPE0TQCJqIUsGnMTcLIqf3JlBjti7E4levbCAvN+18KZg9Yy3CHpYp5MDKNQZk0F\naTTjAkq+7kga8TvWFMRQrF1LWlLDPPdZTgu6++LRzKq/iVzyh5SDhoKiShngGMcu\nl7HQzPVBKwKBgERndqBy4StiFPckOVgvR5zGoNGNqaZFqkvMFu8HzAdT3MDtEyKC\n/5Mf5NG9r1iI+O7/ImIGijPRK41KPW16P/qcQyY8pCeqxbFFZD6M0E5S1738DWmx\nU3jb3qOgkKuzCO0dXcXQd5crTSOQ0BjZUnblFCJDZ9abDmInL13BMcObAoGAS+Ee\na6hda9pp87+Stkdfx7xZOVuE6kJyixrf2PNl9gCRa+Qy37AqG8fukvcyBfAmex6X\naXdwuU7g5XFxOLu6XVBgQ+3AF3sJUWln6SIx2pxZU1U23jnR4vVUvIsPiMpR2XAH\ntr3vNuHl+1kdWsFwCz9/NBdUrRhiw8fDoebcc90CgYEA7xQMCKZTfXNjeUYxq4rw\nAaDGSQDi5lVHejeq/qf6IwJ6xDLRDYDNYzxgekibq5HXM9jopZHUHKJZLMCZHBgR\nVgew/K0sEK/aj0RBUjiUz+jzwnb/A8fhXZMXgAKbQi2V4CO/a2RU3TMVo2gvWGGm\nT083QLbKc4PH71qZiHwUPvU=\n-----END PRIVATE KEY-----\n",
+  "client_email": "cs50-257@intrepid-pride-224519.iam.gserviceaccount.com",
+  "client_id": "118276012900129299374",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/cs50-257%40intrepid-pride-224519.iam.gserviceaccount.com"
+}

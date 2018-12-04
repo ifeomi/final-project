@@ -5,12 +5,19 @@
 {% endblock %}
 
 {% block main %}
+    <font color="white">
     <div class="text-left">
         <h4 class="text-left">Account Information</h4>
         <div class="text-left">
             <dl>
                 <dt>Username</dt>
                 <dd>{{ username }}</dd>
+            </dl>
+            <dl>
+                <dt>Permissions</dt>
+                {% for permission in permissions %}
+                    <dd>{{ permission["permissions"] }}</dd>
+                {% endfor %}
             </dl>
         </div>
 
@@ -29,4 +36,5 @@
             <button class="btn btn-primary" type="submit">Change password</button>
         </form>
     </div>
+    </font>
 {% endblock %}
