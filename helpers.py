@@ -1,5 +1,6 @@
 import requests
 import urllib.parse
+import smtplib
 
 from flask import redirect, render_template, request, session
 from functools import wraps
@@ -62,3 +63,20 @@ def parse(text):
 def rejoin(textList):
     """Rejoins list into comma-delimited string for storage in database."""
     return ','.join(textList)
+
+def send_email(recipients, subject, body):
+    """Sends email given recipients list, subject line, and body message.
+    https://stackabuse.com/how-to-send-emails-with-gmail-using-python/"""
+    gmail_user = 'cs50projectchi@gmail.com'
+    gmail_password = 'carissahunterife'
+
+    sent_from = gmail_user
+
+    try:
+        server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+        server.ehlo()
+        server.login(gmail_user, gmail_password)
+        server.sendmail(sent_from, recipients, body)
+        server.close()
+    except:
+        return None
