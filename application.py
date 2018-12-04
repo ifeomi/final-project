@@ -24,7 +24,8 @@ app = Flask(__name__)
 # Ensure templates are auto-reloaded
 app.config["TEMPLATES_AUTO_RELOAD"] = True
 
-
+UPLOAD_FOLDER = "static/images/"
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # Ensure responses aren't cached
 @app.after_request
@@ -297,7 +298,7 @@ def createevent():
         eventname = request.form.get("eventname")
         club = request.form.get("club")
         description = request.form.get("description")
-        picture = request.form.get("picture")
+        picturename = request.form.get("picture")
         tags = request.form.get("tags")
 
         club_id = db.execute("SELECT club_id FROM clubs WHERE name=:club", club=club)
@@ -310,21 +311,15 @@ def createevent():
         if not club:
             return apology("Missing club!")
         description = request.form.get("description")
-        try:
-            picture = request.files["picture"].read().decode("utf-8")
-        except Exception:
-            apology("Invalid Picture")
-        if picture:
-            filesplit = picture.split(".")
-            fileend = filesplit[1]
+        if picturename:
+            picturereal = request.files["picture"]
             nospaces = eventname.replace(" ", "")
-            filename = nospaces + "." + fileend
-            picturefile = open(filename, "w")
-            picturefile.write(picture)
-            picturefile.close()
+            filename = nospaces + ".jpg"
+            picturereal.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            picturelink = os.path.join(app.config['UPLOAD_FOLDER'], filename)
 
-        if not picture:
-            filename = "NULL"
+        if not picturename:
+            picturelink = ""
 
         location = request.form.get("location")
         if not location:
@@ -395,7 +390,7 @@ def createevent():
         club_id = db.execute("SELECT club_id FROM clubs WHERE name=:club", club=club)
 
         db.execute("INSERT INTO events (club_id, title, description, picture, tags, date, time, location) VALUES(:club_id, :title, :description, :picture, :tags, :date, :time, :location)",
-        club_id=club_id[0]["club_id"], title=title, description=description, picture=picture, tags=rejoin(tags), date=date, time=time, location = location)
+        club_id=club_id[0]["club_id"], title=title, description=description, picture=picturelink, tags=rejoin(tags), date=date, time=time, location = location)
         SCOPES = 'https://www.googleapis.com/auth/calendar'
         # The file token.json stores the user's access and refresh tokens, and is
         # created automatically when the authorization flow completes for the first
