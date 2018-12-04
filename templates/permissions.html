@@ -1,0 +1,32 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Permissions
+{% endblock %}
+
+{% block main %}
+    <font color="white">
+    <h2 class="page-title">Confirm User for Posting Permissions</h2>
+    <form id="permissions" action="/permissions" method="post">
+        <div>
+            <select class="form-control" name="userclub" id="userclub">
+                <option value="" selected disabled>Select Your Club</option>
+                {% for club in clubs %}
+                    <option value="{{ club["name"] }}">{{ club["name"] }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <br>
+        <div>
+            <select class="form-control" name="nameofuser" id="nameofuser">
+                <option value="" selected disabled>Select the User You Want to Give Posting Permissions To</option>
+                {% for user in users %}
+                    <option value="{{ user["name"] }}">{{ user["name"] }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <br>
+        <button class="btn btn-primary" type="submit">Update User Permissions</button>
+    </form>
+    </font>
+{% endblock %}
