@@ -331,10 +331,12 @@ def createevent():
         print("tags")
         print(tags)
 
+        date = startmonth + "/" + startday + "/" + startyear + "-" + endmonth + "/" + endday + "/" + endyear
+        time = starthour + ":" + startminutes + startampm + "-" + endhour + ":" + endminutes + endampm
         club_id = db.execute("SELECT club_id FROM clubs WHERE name=:club", club=club)
 
         db.execute("INSERT INTO events (club_id, title, description, picture, tags, date, time, location) VALUES(:club_id, :title, :description, :picture, :tags, :date, :time, :location)",
-        club_id=club_id[0]["club_id"], title=title, description=description, picture=picture, tags=rejoin(tags), date=startday, time=starthour, location = location)
+        club_id=club_id[0]["club_id"], title=title, description=description, picture=picture, tags=rejoin(tags), date=date, time=time, location = location)
         SCOPES = 'https://www.googleapis.com/auth/calendar'
         # The file token.json stores the user's access and refresh tokens, and is
         # created automatically when the authorization flow completes for the first
@@ -345,7 +347,6 @@ def createevent():
             flow = client.flow_from_clientsecrets('credentials.json', SCOPES)
             creds = tools.run_flow(flow, store)
         service = build('calendar', 'v3', http=creds.authorize(Http()))
-        print ("HEREEEEeeeeeeeeeeeeeeeee")
         event = {
             'summary': title,
             'location': location,

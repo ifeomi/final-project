@@ -7,11 +7,12 @@
 {% block main %}
     <!-- from https://getbootstrap.com/docs/4.0/components/card/ -->
     <p class="heading">Upcoming Events</p>
-    {% for event in events %}
+    <!-- prints events in order from most to least recent -->
+    {% for event in events[::-1] %}
     <div class="card border-danger mb-3">
         <div class="card-header">{{ event["title"] }}</div>
         <div class="card-body text-danger">
-            <h5 class="card-title">{{ event["date"] }} {{ event["time"] }}</h5>
+            <h5 class="card-title">{{ event["date"] }} <br> {{ event["time"] }} <br> {{ event["location"] }}</h5>
             <img class="card-img" src="{{ event["picture"] }}">
             <p class="card-text">{{ event["description"] }}</p>
         </div>
