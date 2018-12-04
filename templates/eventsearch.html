@@ -1,0 +1,77 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Event Search
+{% endblock %}
+
+{% block main %}
+    <div class="form-group">
+        <form name="tag" class="tagform">
+            <select class="form-control" name="tag" id="tag">
+                <option value="" selected disabled>Tag</option>
+                {% for tag in tags %}
+                    <option value={{tag}}>{{ tag }}</option>
+                {% endfor %}
+            </select>
+            <button class="btn btn-primary" type="submit">Search by Tag</button>
+        </form>
+        <br>
+        <form name="clubs" class="clubform">
+            <select class="form-control" name="clubs" id="clubs">
+                <option value="" selected disabled>Club</option>
+                {% for club in clubs %}
+                    <option value="{{ club["name"] }}">{{ club["name"] }}</option>
+                {% endfor %}
+            </select>
+            <button class="btn btn-primary" type="submit">Search by Club</button>
+        </form>
+        <br>
+        <form name="title" class="titleform">
+            <div class="form-group">
+                <input type="text" name="q" class="form-control" placeholder="Search by Title" id="search">
+            </div>
+        </form>
+        <br>
+        <div class="row" id="row">
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script>
+        document.querySelector(".tagform").onsubmit = function(event) {
+            event.preventDefault();
+            let tag = document.forms["tag"]["tag"].value;
+            $.get('/eventsearchtag?tag=' + tag, function(data) {
+                let html='';
+                for (item of data) {
+                    html += '<div class="col"><div class="card" style="width: 18rem;"><div class="card-body"><h5 class="card-title">' + item["title"] +'</h5><h6 class="card-subtitle mb-2 text-muted">' + item["date"] + " " + item["time"] + '</h6><p class="card-text">' + item["description"] + '</p></div></div></div>';
+                }
+                document.getElementById('row').innerHTML = html;
+            });
+            document.getElementById(".tagform").submit();
+        };
+        document.querySelector(".clubform").onsubmit = function(event) {
+            event.preventDefault();
+            let club = document.forms["clubs"]["clubs"].value;
+            $.get('/eventsearchclub?club=' + club, function(data) {
+                let html='';
+                for (item of data) {
+                    html += '<div class="col"><div class="card" style="width: 18rem;"><div class="card-body"><h5 class="card-title">' + item["title"] +'</h5><h6 class="card-subtitle mb-2 text-muted">' + item["date"] + " " + item["time"] + '</h6><p class="card-text">' + item["description"] + '</p></div></div></div>';
+                }
+                document.getElementById('row').innerHTML = html;
+            document.getElementById(".clubform").submit();
+            });
+        };
+        let input = document.getElementById('search');
+        input.onkeyup = function() {
+            $.get('/eventsearchtitle?q=' + input.value, function(data) {
+                let html='';
+                for (dat of data) {
+                    html += '<div class="col"><div class="card" style="width: 18rem;"><div class="card-body"><h5 class="card-title">' + dat["title"] +'</h5><h6 class="card-subtitle mb-2 text-muted">' + dat["date"] + " " + dat["time"] + '</h6><p class="card-text">' + dat["description"] + '</p></div></div></div>'
+                }
+                document.getElementById('row').innerHTML = html;
+            });
+        };
+
+    </script>
+{% endblock %}
