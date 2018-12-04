@@ -16,7 +16,7 @@ import datetime
 import time
 
 
-from helpers import login_required, parse, rejoin
+from helpers import login_required, parse, rejoin, send_email
 
 # Configure application
 app = Flask(__name__)
