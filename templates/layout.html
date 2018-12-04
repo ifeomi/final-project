@@ -34,14 +34,13 @@
             <div class="collapse navbar-collapse" id="navbar">
                 {% if session.user_id %}
                     <ul class="navbar-nav mr-auto mt-2">
-                        <li class="nav-item"><a class="nav-link" href="/userinfo">User Info</a></li>
                         <li class="nav-item"><a class="nav-link" href="/calendar">Calendar</a></li>
                         <li class="nav-item"><a class="nav-link" href="/clubs">Clubs</a></li>
                         <li class="nav-item"><a class="nav-link" href="/createevent">Create Event</a></li>
                         <li class="nav-item"><a class="nav-link" href="/eventsearch">Search Events</a></li>
                     </ul>
                     <ul class="navbar-nav ml-auto mt-2">
-                        <li class="nav-item"><a class="nav-link" href="/settings">Change Password</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/settings">Settings</a></li>
                         <li class="nav-item"><a class="nav-link" href="/logout">Log Out</a></li>
                     </ul>
                 {% else %}
@@ -66,7 +65,7 @@
         </main>
 
         <footer class="small text-center text-muted">
-            Data provided for free by <a href="https://iextrading.com/developer">IEX</a>. View <a href="https://iextrading.com/api-exhibit-a/">IEX’s Terms of Use</a>.
+
         </footer>
 
     </body>
