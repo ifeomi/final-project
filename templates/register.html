@@ -5,21 +5,6 @@
 {% endblock %}
 
 {% block main %}
-    <script>
-        let form = document.querySelector("#register-form");
-        let username = document.querySelector("#username");
-        form.onsubmit = function(e) {
-            e.preventDefault();
-            $.get("/check", {username: username.value}, function(data){
-                if (data) {
-                    form.submit();
-                }
-                else {
-                    alert("Username is taken");
-                }
-            })
-        }
-    </script>
     <form id="register-form" action="/register" method="post">
         <div class="form-group">
             <input autofocus class="form-control" name="name" placeholder="Name" type="text">
@@ -52,4 +37,21 @@
         </div>
         <button class="btn btn-primary" type="submit">Register</button>
     </form>
+
+    <script>
+        document.querySelector("form").onsubmit = function(event) {
+            event.preventDefault();
+            let username = document.forms["register-form"]["username"].value;
+            $.getJSON("/check?username=" + username, function(data) {
+                if (data == false) {
+                    alert("Username is already taken!");
+                    return false;
+                }
+                else {
+                    document.getElementById("register-form").submit();
+                    return true;
+                }
+            });
+        };
+    </script>
 {% endblock %}

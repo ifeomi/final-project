@@ -65,14 +65,17 @@ def index():
 @app.route("/check", methods=["GET"])
 def check():
     """Return true if username available, else false, in JSON format"""
+    # get the username the user input from the form
     username = request.args.get("username")
-    if len(username) >= 1:
-        results = db.execute("SELECT * FROM users WHERE username = :username", username=username)
-        if results:
+    # get all of the current usernames of users
+    currentUsernames = db.execute("SELECT username FROM users")
+    # iterate through each user
+    for user in currentUsernames:
+        # if the username the current user is trying to use already exists, return false and notify them, via the javascript, that the username is taken
+        if user["username"] == username:
             return jsonify(False)
-        else:
-            return jsonify(True)
-    return(False)
+    # the username is not taken, the user can use it and return true
+    return jsonify(True)
 
 
 @app.route("/history")
