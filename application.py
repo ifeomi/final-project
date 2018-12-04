@@ -59,8 +59,7 @@ def index():
         # if eventdate < currentdate:
             # club_db.execute("DELETE FROM events WHERE event_id=:event_id", event_id=event_id)
     events = db.execute("SELECT * FROM events")
-    full_filename = os.path.join(app.config['UPLOAD_FOLDER'], 'testuploadpicture.jpg')
-    return render_template("index.html", events=events, image=full_filename)
+    return render_template("index.html", events=events)
 
 
 @app.route("/check", methods=["GET"])
