@@ -424,7 +424,7 @@ def createevent():
 
         event = service.events().insert(calendarId='primary', body=event).execute()
         print('Event created: %s' % (event.get('htmlLink')))
-        return render_template("index.html")
+        return render_template("index.html", events = db.execute("SELECT * FROM events"))
     else:
         # userpermissions = club_db.execute("SELECT permissions FROM users WHERE id=:id", session["user_id"])
         # if userpermissions = True:
