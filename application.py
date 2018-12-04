@@ -16,7 +16,7 @@ import datetime
 import time
 
 
-from helpers import apology, login_required, lookup, parse, rejoin
+from helpers import login_required, parse, rejoin
 
 # Configure application
 app = Flask(__name__)
@@ -78,13 +78,6 @@ def check():
     return jsonify(True)
 
 
-@app.route("/history")
-@login_required
-def history():
-    """Show history of transactions"""
-    results = db.execute("SELECT * FROM transactions JOIN users ON users.id = transactions.user_id WHERE users.id=:user_id", user_id=session["user_id"])
-    return render_template("history.html", results=results)
-
 @app.route("/settings", methods=["GET", "POST"])
 @login_required
 def settings():
@@ -93,25 +86,26 @@ def settings():
 
         # Make sure user fills out all fields
         if not request.form.get("password"):
-            return apology("must provide password", 403)
+            return render_template("error.html", message="Must provide password")
         elif not request.form.get("new-password"):
-            return apology("must provide new password", 403)
+            return render_template("error.html", message="Must provide new password")
         elif not request.form.get("confirmation"):
-            return apology("must confirm password", 403)
+            return render_template("error.html", message="Must confirm password")
 
         rows = db.execute("SELECT hash FROM users WHERE id = :user_id",user_id=session["user_id"])
         if not check_password_hash(rows[0]["hash"], request.form.get("password")):
-            return apology("invalid  password", 403)
+            return render_template("error.html", message="Invalid password")
         else:
             if request.form.get("new-password") == request.form.get("confirmation"):
                 db.execute("UPDATE users SET hash = :hashedpass WHERE id = :user_id", hashedpass=generate_password_hash(request.form.get("new-password")), user_id=session["user_id"])
                 return redirect("/")
             else:
-                return apology("new passwords don't match")
+                return render_template("error.html", message="New passwords do not match")
     # User reached route via get
     else:
         user = db.execute("SELECT * FROM users WHERE id = :user_id", user_id = session["user_id"])[0]
         return render_template("settings.html", username = user["username"])
+
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -125,11 +119,11 @@ def login():
 
         # Ensure username was submitted
         if not request.form.get("username"):
-            return apology("must provide username", 403)
+            return render_template("error.html", message="Must provide username")
 
         # Ensure password was submitted
         elif not request.form.get("password"):
-            return apology("must provide password", 403)
+            return render_template("error.html", message="Must provide passowrd")
 
         # Query database for username
         rows = db.execute("SELECT * FROM users WHERE username = :username",
@@ -137,7 +131,7 @@ def login():
 
         # Ensure username exists and password is correct
         if len(rows) != 1 or not check_password_hash(rows[0]["hash"], request.form.get("password")):
-            return apology("invalid username and/or password", 403)
+            return render_template("error.html", message="Invalid username and/or password")
 
         # Remember which user has logged in
         session["user_id"] = rows[0]["id"]
@@ -161,24 +155,6 @@ def logout():
     return redirect("/")
 
 
-@app.route("/quote", methods=["GET", "POST"])
-@login_required
-def quote():
-    """Get stock quote."""
-    if request.method == "POST":
-        symbol = request.form.get("symbol")
-
-        # Error checking: if form gets submitted with blank symbol or user
-        if not symbol:
-            return apology("Invalid symbol")
-        elif not lookup(symbol):
-            return apology("Symbol doesn't exist")
-
-        return render_template("quoted.html", name=lookup(symbol)["name"], price=usd(lookup(symbol)["price"]))
-    else:
-        return render_template("quote.html")
-
-
 @app.route("/register", methods=["GET", "POST"])
 def register():
     """Register user"""
@@ -191,21 +167,21 @@ def register():
         name = request.form.get("name")
         permissions = request.form.getlist("permissions")
 
-        # Return relevant apology is user didn't input one variable
+        # Return relevant error is user didn't input one variable
         if not username:
-            return apology("Missing username!")
+            return render_template("error.html", message="Missing username")
         if not password:
-            return apology("Missing password!")
+            return render_template("error.html", message="Missing password")
         if not confirmation:
-            return apology("Missing password confirmation!")
+            return render_template("error.html", message="Missing password confirmation")
         if password != confirmation:
-            return apology("Passwords do not match")
+            return render_template("error.html", message="Passwords do not match")
 
         # If insertion returns null, then username must be taken
         result = db.execute("INSERT INTO users (username, hash, name, email, permissions) VALUES(:username, :hashed, :name, :email, :permissions)",
         username=username, hashed=generate_password_hash(password), name=name, email=email, permissions=rejoin(permissions))
         if not result:
-            return apology("Username is taken")
+            return render_template("error.html", message="Username is taken")
 
         rows = db.execute("SELECT * FROM users WHERE username = :username", username=username)
 
@@ -218,12 +194,6 @@ def register():
         return render_template("register.html", clubs = db.execute("SELECT name FROM clubs"))
 
 
-
-@app.route("/userinfo", methods=["GET", "POST"])
-@login_required
-def userinfo():
-    return render_template("userinfo.html", username = db.execute("SELECT username FROM users WHERE id = :user_id", user_id = session["user_id"])[0]["username"], hash = db.execute("SELECT hash FROM users WHERE id = :user_id", user_id = session["user_id"])[0]["hash"])
-
 @app.route("/clubs", methods=["GET", "POST"])
 @login_required
 def clubs():
@@ -231,10 +201,10 @@ def clubs():
         clubs = db.execute("SELECT * FROM clubs")
         return render_template("clubs.html", clubs=clubs)
 
+
 @app.route("/search")
 def search():
     q = "'%" + request.args.get("q") + "%'"
-    print(q)
     results = db.execute("SELECT * FROM clubs WHERE name LIKE " + q)
     return jsonify(results)
 
@@ -251,6 +221,7 @@ def searchevent():
     tagNames = ["Academic", "Art", "Business", "Club Sports", "College Life", "Community Service", "Cultural", "Dance", "Free Food","Gender and Sexuality", "Government and Politics", "Health", "House Committee", "Media", "Offices", "Peer Counseling", "Performing Arts", "Pre-Professional", "Publications", "Religious", "Social", "Special Interests", "STEM", "Women’s Initiatives"]
     clubs = db.execute("SELECT name FROM clubs")
     return render_template("eventsearch.html", tags=tagNames, clubs=clubs)
+
 
 @app.route("/eventsearchtag")
 @login_required
@@ -292,75 +263,91 @@ def eventsearchtitle():
     return jsonify(results)
 
 
+@app.route("/permissions", methods=["GET", "POST"])
+@login_required
+def permissions():
+    if request.method == "POST":
+        club = request.form.get("userclub")
+        if not club:
+            return render_template("error.html", message="You must provide your club")
+        user = request.form.get("nameofuser")
+        if not user:
+            return render_template("error.html", message="You must provide the user you want to give permissions to")
+        db.execute("UPDATE users SET permissions=:permissions WHERE name=:name", permissions=club, name=user)
+        return render_template("calendar.html")
+    else:
+        clubs = db.execute("SELECT name FROM clubs")
+        users = db.execute("SELECT name FROM users")
+        return render_template("permissions.html", clubs=clubs, users=users)
+
+
 @app.route("/createevent", methods=["GET", "POST"])
 @login_required
 def createevent():
     tagNames = ["Academic", "Art", "Business", "Club Sports", "College Life", "Community Service", "Cultural", "Dance", "Free Food","Gender and Sexuality", "Government and Politics", "Health", "House Committee", "Media", "Offices", "Peer Counseling", "Performing Arts", "Pre-Professional", "Publications", "Religious", "Social", "Special Interests", "STEM", "Women’s Initiatives"]
     if request.method == "POST":
         # Store inputs in variables for easier access
-        eventname = request.form.get("eventname")
+
+        # Return relevant error is user didn't input one variable
+        title = request.form.get("eventname")
+        if not title:
+            return render_template("error.html", message="You must provide an event name")
         club = request.form.get("club")
+        if not club:
+            return render_template("error.html", message="You must provide a club")
+        club_id = db.execute("SELECT club_id FROM clubs WHERE name=:club", club=club)
         description = request.form.get("description")
         pictureuploadcheck = request.form.get("pictureuploadcheck")
+        if not pictureuploadcheck:
+            return render_template("error.html", message="You must say whether or not you want to upload a picture")
         if pictureuploadcheck == "yes":
             picture = request.files["picture"]
-            nospaces = eventname.replace(" ", "")
+            nospaces = title.replace(" ", "")
             filename = nospaces + ".jpg"
             picture.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             picturelink = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         else:
             picturelink = ""
-        tags = request.form.get("tags")
-
-        club_id = db.execute("SELECT club_id FROM clubs WHERE name=:club", club=club)
-
-        # Return relevant apology is user didn't input one variable
-        title = request.form.get("eventname")
-        if not title:
-            return apology("Missing event name!")
-        club = request.form.get("club")
-        if not club:
-            return apology("Missing club!")
-        description = request.form.get("description")
         location = request.form.get("location")
         if not location:
-            return apology("You must provide a location!")
+            return render_template("error.html", message="You must provide a location")
+        tags = request.form.get("tags")
         startmonth = request.form.get("startmonth")
         if not startmonth:
-            return apology("You must provide a starting date (month)!")
+            return render_template("error.html", message="You must provide a starting date (month)")
         startday = request.form.get("startday")
         if not startday:
-            return apology("You must provide a starting date (day)!")
+            return render_template("error.html", message="You must provide a starting date (day)")
         startyear = request.form.get("startyear")
         if not startyear:
-            return apology("You must provide a starting date (year)!")
+            return render_template("error.html", message="You must provide a starting date (year)")
         endmonth = request.form.get("endmonth")
         if not endmonth:
-            return apology("You must provide an ending date (month)!")
+            return render_template("error.html", message="You must provide an ending date (month)")
         endday = request.form.get("endday")
         if not endday:
-            return apology("You must provide an ending date (day)!")
+            return render_template("error.html", message="You must provide an ending date (day)")
         endyear = request.form.get("endyear")
         if not endyear:
-            return apology("You must provide an ending date (year)!")
+            return render_template("error.html", message="You must provide an ending date (year)")
         starthour = request.form.get("starthour")
         if not starthour:
-            return apology("You must provide a starting time (hour)!")
+            return render_template("error.html", message="You must provide a starting time (hour)")
         startminutes = request.form.get("startminutes")
         if not startminutes:
-            return apology("You must provide a starting time (minutes)!")
+            return render_template("error.html", message="You must provide a starting time (minutes)")
         startampm = request.form.get("startampm")
         if not startampm:
-            return apology("You must provide a starting time (am/pm)!")
+            return render_template("error.html", message="You must provide a starting time (am/pm)")
         endhour = request.form.get("endhour")
         if not endhour:
-            return apology("You must provide an ending time (hour)!")
+            return render_template("error.html", message="You must provide an ending time (hour)")
         endminutes = request.form.get("endminutes")
         if not endminutes:
-            return apology("You must provide an ending time (minutes)!")
+            return render_template("error.html", message="You must provide an ending time (minutes)")
         endampm = request.form.get("endampm")
         if not endampm:
-            return apology("You must provide an ending time (am/pm)!")
+            return render_template("error.html", message="You must provide an ending time (am/pm)")
         if startampm == "AM":
             starthourmilitary = int(starthour) + 12
             starthour = str(starthourmilitary)
@@ -375,7 +362,7 @@ def createevent():
                 # print(club)
                 # break
             # if i == len(parse(permissions[0]["permissions"]))-1:
-                # return apology("Sorry, but you do not have permission to post for this club.")
+                # return render_template("error.html", message="Sorry, but you do not have permission to post events for this club")
 
         startdateandtime = startyear + "-" + startmonth + "-" + startday + "T" + starthour + ":" + startminutes + ":00-04:00"
         enddateandtime = endyear + "-" + endmonth + "-" + endday + "T" + endhour + ":" + endminutes + ":00-04:00"
@@ -428,21 +415,19 @@ def createevent():
         print('Event created: %s' % (event.get('htmlLink')))
         return render_template("index.html", events = db.execute("SELECT * FROM events"))
     else:
-        # userpermissions = club_db.execute("SELECT permissions FROM users WHERE id=:id", session["user_id"])
-        # if userpermissions = True:
-            # clubs = club_db.execute("SELECT name FROM clubs")
-            # return render_template("createevent.html", clubs=clubs)
-        # else:
-            # return apology("You can not access this page!")
-        clubs = db.execute("SELECT name FROM clubs")
-        return render_template("createevent.html", clubs=clubs, tags=tagNames)
+        userpermissions = db.execute("SELECT permissions FROM users WHERE id=:id", id=session["user_id"])
+        if userpermissions[0]["permissions"] == None or userpermissions[0]["permissions"] == "":
+            return render_template("error.html", message="You do not have permissions to post for any clubs")
+        else:
+            clubs = db.execute("SELECT name FROM clubs")
+            return render_template("createevent.html", clubs=clubs)
 
 
 def errorhandler(e):
     """Handle error"""
     if not isinstance(e, HTTPException):
         e = InternalServerError()
-    return apology(e.name, e.code)
+    return render_template("error.html", message=e.name)
 
 
 # Listen for errors
