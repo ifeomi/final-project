@@ -467,7 +467,7 @@ def createevent():
             return render_template("error.html", message="You do not have permissions to post for any clubs")
         else:
             clubs = db.execute("SELECT name FROM clubs")
-            return render_template("createevent.html", clubs=clubs)
+            return render_template("createevent.html", clubs=clubs, tags=tagNames)
 
 
 def errorhandler(e):
