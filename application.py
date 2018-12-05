@@ -244,7 +244,17 @@ def clubs():
     if request.method == "GET":
         clubs = db.execute("SELECT * FROM clubs")
         return render_template("clubs.html", clubs=clubs)
+    else:
+        subscription = request.form.get("subscribe")
+        row = db.execute("SELECT * FROM users WHERE id = :user_id", user_id=session["user_id"])[0]
+        if row["subscriptions"]:
+            clubsList = parse(row["subscriptions"])
+            clubsList.append(subscription)
+        else:
+            clubsList = subscription
+        db.execute("UPDATE users SET subscriptions = :subscriptions WHERE id = :user_id", user_id=session["user_id"], subscriptions=rejoin(clubsList))
 
+        return redirect("/")
 
 @app.route("/search")
 def search():
@@ -463,6 +473,21 @@ def createevent():
 
         event = service.events().insert(calendarId='primary', body=event).execute()
         print('Event created: %s' % (event.get('htmlLink')))
+
+        rows = db.execute("SELECT email, subscriptions FROM users WHERE subscriptions IS NOT NULL")
+        print(rows)
+        emailList = []
+
+        for row in rows:
+            print(row["subscriptions"])
+            clubsList = parse(row["subscriptions"])
+            print(clubsList)
+            print(str(club_id))
+            if str(club_id[0]["club_id"]) in clubsList:
+                emailList.append(row["email"])
+        print(emailList)
+        send_email(emailList, "New event posted by one of your clubs", "One of the clubs you subscribe to just posted a new event. Check it out!")
+
         return render_template("index.html", events = db.execute("SELECT * FROM events"))
     else:
         userpermissions = db.execute("SELECT permissions FROM users WHERE id=:id", id=session["user_id"])
