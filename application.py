@@ -172,6 +172,7 @@ def register():
         confirmation = request.form.get("confirmation")
         email = request.form.get("email")
         name = request.form.get("name")
+        preferences = request.form.getlist("preferences")
         permissions = request.form.getlist("permissions")
 
         # Return relevant error is user didn't input one variable
@@ -184,7 +185,8 @@ def register():
         if password != confirmation:
             return render_template("error.html", message="Passwords do not match")
 
-        #sends permission email to club
+
+        # Sends permission email to club
         if permissions != None:
             server = smtplib.SMTP("smtp.gmail.com", 587)
             server.starttls()
@@ -219,8 +221,9 @@ def register():
             server.sendmail("cs50projectchi@gmail.com", "carissawu2009@gmail.com", msg.as_string())
 
         # If insertion returns null, then username must be taken
-        result = db.execute("INSERT INTO users (username, hash, name, email, permissions) VALUES(:username, :hashed, :name, :email, :permissions)",
-        username=username, hashed=generate_password_hash(password), name=name, email=email, permissions=rejoin(permissions))
+        result = db.execute("INSERT INTO users (username, hash, name, email, preferences, permissions) VALUES(:username, :hashed, :name, :email, :preferences, :permissions)",
+        username=username, hashed=generate_password_hash(password), name=name, email=email, preferences=rejoin(preferences), permissions=rejoin(permissions))
+
         if not result:
             return render_template("error.html", message="Username is taken")
 
