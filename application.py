@@ -172,6 +172,7 @@ def register():
         confirmation = request.form.get("confirmation")
         email = request.form.get("email")
         name = request.form.get("name")
+        preferences = request.form.getlist("preferences")
         permissions = request.form.getlist("permissions")
 
         # Return relevant error is user didn't input one variable
@@ -184,7 +185,8 @@ def register():
         if password != confirmation:
             return render_template("error.html", message="Passwords do not match")
 
-        #sends permission email to club
+
+        # Sends permission email to club
         if permissions != None:
             server = smtplib.SMTP("smtp.gmail.com", 587)
             server.starttls()
@@ -219,8 +221,9 @@ def register():
             server.sendmail("cs50projectchi@gmail.com", "carissawu2009@gmail.com", msg.as_string())
 
         # If insertion returns null, then username must be taken
-        result = db.execute("INSERT INTO users (username, hash, name, email, permissions) VALUES(:username, :hashed, :name, :email, :permissions)",
-        username=username, hashed=generate_password_hash(password), name=name, email=email, permissions=rejoin(permissions))
+        result = db.execute("INSERT INTO users (username, hash, name, email, preferences, permissions) VALUES(:username, :hashed, :name, :email, :preferences, :permissions)",
+        username=username, hashed=generate_password_hash(password), name=name, email=email, preferences=rejoin(preferences), permissions=rejoin(permissions))
+
         if not result:
             return render_template("error.html", message="Username is taken")
 
@@ -241,7 +244,17 @@ def clubs():
     if request.method == "GET":
         clubs = db.execute("SELECT * FROM clubs")
         return render_template("clubs.html", clubs=clubs)
+    else:
+        subscription = request.form.get("subscribe")
+        row = db.execute("SELECT * FROM users WHERE id = :user_id", user_id=session["user_id"])[0]
+        if row["subscriptions"]:
+            clubsList = parse(row["subscriptions"])
+            clubsList.append(subscription)
+        else:
+            clubsList = subscription
+        db.execute("UPDATE users SET subscriptions = :subscriptions WHERE id = :user_id", user_id=session["user_id"], subscriptions=rejoin(clubsList))
 
+        return redirect("/")
 
 @app.route("/search")
 def search():
@@ -460,6 +473,21 @@ def createevent():
 
         event = service.events().insert(calendarId='primary', body=event).execute()
         print('Event created: %s' % (event.get('htmlLink')))
+
+        rows = db.execute("SELECT email, subscriptions FROM users WHERE subscriptions IS NOT NULL")
+        print(rows)
+        emailList = []
+
+        for row in rows:
+            print(row["subscriptions"])
+            clubsList = parse(row["subscriptions"])
+            print(clubsList)
+            print(str(club_id))
+            if str(club_id[0]["club_id"]) in clubsList:
+                emailList.append(row["email"])
+        print(emailList)
+        send_email(emailList, "New event posted by one of your clubs", "One of the clubs you subscribe to just posted a new event. Check it out!")
+
         return render_template("index.html", events = db.execute("SELECT * FROM events"))
     else:
         userpermissions = db.execute("SELECT permissions FROM users WHERE id=:id", id=session["user_id"])
@@ -467,7 +495,7 @@ def createevent():
             return render_template("error.html", message="You do not have permissions to post for any clubs")
         else:
             clubs = db.execute("SELECT name FROM clubs")
-            return render_template("createevent.html", clubs=clubs)
+            return render_template("createevent.html", clubs=clubs, tags=tagNames)
 
 
 def errorhandler(e):

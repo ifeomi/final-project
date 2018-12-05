@@ -34,13 +34,20 @@ def send_email(recipients, subject, body):
     gmail_user = 'cs50projectchi@gmail.com'
     gmail_password = 'carissahunterife'
 
-    sent_from = gmail_user
+    email_text = "\r\n".join([
+      "From: " + gmail_user,
+      "To: " + ",".join(recipients),
+      "Subject: " + subject,
+      "",
+       body
+      ])
+
 
     try:
         server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
         server.ehlo()
         server.login(gmail_user, gmail_password)
-        server.sendmail(sent_from, recipients, body)
+        server.sendmail(gmail_user, recipients, email_text)
         server.close()
     except:
         return None

@@ -16,15 +16,17 @@
             {% for club in clubs %}
             <div class="col">
                 <div class="card" style="width: 18rem;">
-                        <div class="card-body">
-                            <h5 class="card-title">{{ club["name"] }}</h5>
-                            <h6 class="card-subtitle mb-2 text-muted">Category: {{ club["category"] }}</h6>
-                            <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                            <a href="mailto: { club["email"] }" class="card-link">{{ club["email"] }}</a>
-                            <a href="mailto:{{ club["email"] }}" class="card-link">{{ club["email"] }}</a>
-                            <!-- <a href="#" class="card-link">Another link</a> -->
-                          </div>
+                    <div class="card-body">
+                        <h5 class="card-title"> {{ club["name"] }} </h5>
+                        <h6 class="card-subtitle mb-2 text-muted">Category: {{ club["category"] }} </h6>
+                        <p class="card-text"> {{ club["purpose"] }} </p>
+                        <a href="mailto:{{club["email"]}}" class="card-link"> {{ club["email"] }} </a>
+                        <form action="/clubs" method="post">
+                            <input type="hidden" name="subscribe" value="{{club["club_id"]}}">
+                            <button type="submit" class="btn btn-primary btn-sm">Subscribe</button>
+                        </form>
                     </div>
+                </div>
             </div>
             {% endfor %}
         </div>
@@ -44,8 +46,8 @@
                     <h6 class="card-subtitle mb-2 text-muted">Category: ' + club["category"] + '</h6>\
                     <p class="card-text">' + club["purpose"] + '</p>\
                     <a href="mailto:'+ club["email"] + '" class="card-link"> ' + club["email"] + '</a>\
-                    <form action="/subscribe" method="post">\
-                    <input type="hidden" value="' + club["club_id"] + '">\
+                    <form action="/clubs" method="post">\
+                    <input type="hidden" name="subscribe" value="' + club["club_id"] + '">\
                     <button type="submit" class="btn btn-primary btn-sm">Subscribe</button>\
                     </form>\
                     </div>\
