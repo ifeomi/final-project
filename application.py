@@ -418,8 +418,8 @@ def createevent():
             if i == len(parse(permissions[0]["permissions"]))-1:
                 return render_template("error.html", message="Sorry, but you do not have permission to post events for this club")
 
-        startdateandtime = startyear + "-" + startmonth + "-" + startday + "T" + starthour + ":" + startminutes + ":00-04:00"
-        enddateandtime = endyear + "-" + endmonth + "-" + endday + "T" + endhour + ":" + endminutes + ":00-04:00"
+        startdateandtime = startyear + "-" + startmonth + "-" + startday + "T" + starthour + ":" + startminutes + ":00-05:00"
+        enddateandtime = endyear + "-" + endmonth + "-" + endday + "T" + endhour + ":" + endminutes + ":00-05:00"
 
         tags = []
         for tag in tagNames:
@@ -446,7 +446,7 @@ def createevent():
         service = build('calendar', 'v3', http=creds.authorize(Http()))
         """
         SCOPES = ['https://www.googleapis.com/auth/calendar']
-        SERVICE_ACCOUNT_FILE = 'service.json'
+        SERVICE_ACCOUNT_FILE = '/home/ubuntu/workspace/final-project/service.json'
         credentials = service_account.Credentials.from_service_account_file(
         SERVICE_ACCOUNT_FILE, scopes=SCOPES)
         service = googleapiclient.discovery.build('calendar', 'v3', credentials=credentials)
@@ -471,7 +471,7 @@ def createevent():
             },
         }
 
-        event = service.events().insert(calendarId='primary', body=event).execute()
+        event = service.events().insert(calendarId='cs50projectchi@gmail.com', body=event).execute()
         print('Event created: %s' % (event.get('htmlLink')))
 
         rows = db.execute("SELECT email, subscriptions FROM users WHERE subscriptions IS NOT NULL")
@@ -495,7 +495,8 @@ def createevent():
             return render_template("error.html", message="You do not have permissions to post for any clubs")
         else:
             clubs = db.execute("SELECT name FROM clubs")
-            return render_template("createevent.html", clubs=clubs, tags=tagNames)
+            months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+            return render_template("createevent.html", clubs=clubs, tags=tagNames, months = months)
 
 
 def errorhandler(e):
