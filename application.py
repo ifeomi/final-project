@@ -344,8 +344,6 @@ def register():
         session["user_id"] = rows[0]["id"]
         return redirect("/")
 
-        # Add permissions to user database
-
     else:
         return render_template("register.html", clubs = db.execute("SELECT name FROM clubs"), preferences = all_preferences)
 
