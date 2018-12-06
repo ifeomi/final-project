@@ -617,7 +617,7 @@ def createevent():
         print(emailList)
         send_email(emailList, "New event posted by one of your clubs", "One of the clubs you subscribe to just posted a new event. Check it out!")
 
-        return render_template("index.html", events = db.execute("SELECT * FROM events JOIN clubs on events.club_id=clubs.club_id"))
+        return redirect("/")
     # user reached route via get
     else:
         # get the permission for the user

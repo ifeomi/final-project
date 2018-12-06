@@ -5,127 +5,128 @@
 {% endblock %}
 
 {% block main %}
-    <div class="container white">
-      <div class="py-5 text-center">
+<!-- from bootstrap (where?) -->
+<div class="container white">
+    <div class="py-5 text-center">
         <img class="d-block mx-auto mb-4" src="../../assets/brand/bootstrap-solid.svg" alt="" width="72" height="72">
         <h2>User Settings</h2>
-      </div>
+    </div>
 
-      <div class="row">
+    <div class="row">
         <div class="col-md-4 order-md-2 mb-4">
-          <h4 class="d-flex justify-content-between align-items-center mb-3">
-            Navigate
-          </h4>
-          <ul class="list-group mb-3">
-            <li class="list-group-item d-flex justify-content-between lh-condensed">
-                <h6 class="my-0"><a href="#account-information">Account Information</a></h6>
-            </li>
-            <li class="list-group-item d-flex justify-content-between lh-condensed">
-                <h6 class="my-0"><a href="#change-password">Change Password</a></h6>
-            </li>
-            <li class="list-group-item d-flex justify-content-between lh-condensed">
-                <h6 class="my-0"><a href="#subscriptions-settings">Subscriptions</a></h6>
-            </li>
-            <li class="list-group-item d-flex justify-content-between lh-condensed">
-                <h6 class="my-0"><a href="#preferences-settings">Preferences</a></h6>
-            </li>
-            <li class="list-group-item d-flex justify-content-between lh-condensed">
-                <h6 class="my-0"><a href="#permissions-settings">Permissions</a></h6>
-            </li>
-          </ul>
+            <h4 class="d-flex justify-content-between align-items-center mb-3">
+                Navigate
+            </h4>
+            <ul class="list-group mb-3">
+                <li class="list-group-item d-flex justify-content-between lh-condensed">
+                    <h6 class="my-0"><a href="#account-information">Account Information</a></h6>
+                </li>
+                <li class="list-group-item d-flex justify-content-between lh-condensed">
+                    <h6 class="my-0"><a href="#change-password">Change Password</a></h6>
+                </li>
+                <li class="list-group-item d-flex justify-content-between lh-condensed">
+                    <h6 class="my-0"><a href="#subscriptions-settings">Subscriptions</a></h6>
+                </li>
+                <li class="list-group-item d-flex justify-content-between lh-condensed">
+                    <h6 class="my-0"><a href="#preferences-settings">Preferences</a></h6>
+                </li>
+                <li class="list-group-item d-flex justify-content-between lh-condensed">
+                    <h6 class="my-0"><a href="#permissions-settings">Permissions</a></h6>
+                </li>
+            </ul>
         </div>
         <div class="col-md-8 order-md-1">
-          <h4 class="mb-3" id="account-information">Account Information</h4>
-          <form action="/settings" method="post">
-            <div class="row">
-              <div class="col-md-6 mb-3">
-                <label for="name">Update name</label>
-                <input type="text" class="form-control" id="name" name="name" placeholder="{{name}}">
-              </div>
-              <div class="col-md-6 mb-3">
-                <label for="username">Update username</label>
-                <div class="input-group">
-                  <div class="input-group-prepend">
-                    <span class="input-group-text">@</span>
-                  </div>
-                  <input type="text" class="form-control" id="username" name="username" placeholder="{{ username }}">
+            <h4 class="mb-3" id="account-information">Account Information</h4>
+            <form action="/settings" method="post">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                    <label for="name">Update name</label>
+                    <input type="text" class="form-control" id="name" name="name" placeholder="{{name}}">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="username">Update username</label>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">@</span>
+                            </div>
+                            <input type="text" class="form-control" id="username" name="username" placeholder="{{ username }}">
+                        </div>
+                    </div>
                 </div>
-              </div>
-            </div>
-            <div class="mb-3">
-              <label for="email">Update email</label>
-              <input type="email" class="form-control" id="email" name="email" placeholder="{{ email }}">
-            </div>
-            <hr class="mb-4">
-            <h4 class="mb-3" id="change-password">Change Password</h4>
-            <div class="row">
-              <div class="col-md-4 mb-3">
-                <input class="form-control" name="password" placeholder="Old password" type="password">
-              </div>
-              <div class="col-md-4 mb-3">
-                <input class="form-control" name="new-password" placeholder="New password" type="password">
-              </div>
-              <div class="col-md-4 mb-3">
-                <input class="form-control" name="confirmation" placeholder="Confirm new password" type="password">
-              </div>
-            </div>
-            <hr class="mb-4">
-            <h4 class="mb-3" id="subscription-settings">Subscriptions</h4>
-            <div class="row">
-              <div class="col-md-6 mb-3">
-                Currently subscribed to updates from:
-              </div>
-              <div class="col-md-6 mb-3">
-                <label for="subscriptions">Subscribe</label>
-                <select multiple class="form-control" name="subscriptions" id="subscriptions">
-                  <option value="" selected disabled>Begin typing to filter...</option>
-                  {% for permission in permissions %}
-                    <option value="{{ permission }}">{{ permission }}</option>
-                  {% endfor %}
-                  <option value="None">None</option>
-                </select>
-              </div>
-            </div>
-            <h4 class="mb-3" id="preferences-settings">Preferences</h4>
-            <div class="row">
-              <div class="col-md-6 mb-3">
-                Current preferences:
-              </div>
-              <div class="col-md-6 mb-3">
-                <label for="subscriptions">Add preferences</label>
-                <select multiple class="form-control" name="subscriptions" id="subscriptions">
-                  <option value="" selected disabled>Begin typing to filter...</option>
-                  {% for permission in permissions %}
-                    <option value="{{ permission }}">{{ permission }}</option>
-                  {% endfor %}
-                  <option value="None">None</option>
-                </select>
-              </div>
-            </div>
-            <h4 class="mb-3" id="permissions-settings">Permissions</h4>
-            <div class="row">
-              <div class="col-md-6 mb-3">
-                You have permissions for the following clubs:
-              </div>
-              <div class="col-md-6 mb-3">
-                <label for="subscriptions">Request permissions</label>
-                <select multiple class="form-control" name="subscriptions" id="subscriptions">
-                  <option value="" selected disabled>Begin typing to filter...</option>
-                  {% for permission in permissions %}
-                    <option value="{{ permission }}">{{ permission }}</option>
-                  {% endfor %}
-                  <option value="None">None</option>
-                </select>
-              </div>
-            </div>
-            <hr class="mb-4">
-            <button class="btn btn-primary" type="submit">Submit Changes</button>
-          </form>
+                <div class="mb-3">
+                    <label for="email">Update email</label>
+                    <input type="email" class="form-control" id="email" name="email" placeholder="{{ email }}">
+                </div>
+                <hr class="mb-4">
+                <h4 class="mb-3" id="change-password">Change Password</h4>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <input class="form-control" name="password" placeholder="Old password" type="password">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <input class="form-control" name="new-password" placeholder="New password" type="password">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <input class="form-control" name="confirmation" placeholder="Confirm new password" type="password">
+                    </div>
+                </div>
+                <hr class="mb-4">
+                <h4 class="mb-3" id="subscription-settings">Subscriptions</h4>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                    Currently subscribed to updates from:
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="subscriptions">Subscribe</label>
+                        <select multiple class="form-control" name="subscriptions" id="subscriptions">
+                            <option value="" selected disabled>Begin typing to filter...</option>
+                                {% for permission in permissions %}
+                                    <option value="{{ permission }}">{{ permission }}</option>
+                                {% endfor %}
+                            <option value="None">None</option>
+                        </select>
+                    </div>
+                </div>
+                <h4 class="mb-3" id="preferences-settings">Preferences</h4>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                    Current preferences:
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="subscriptions">Add preferences</label>
+                        <select multiple class="form-control" name="subscriptions" id="subscriptions">
+                            <option value="" selected disabled>Begin typing to filter...</option>
+                                {% for permission in permissions %}
+                                    <option value="{{ permission }}">{{ permission }}</option>
+                                {% endfor %}
+                            <option value="None">None</option>
+                        </select>
+                    </div>
+                </div>
+                <h4 class="mb-3" id="permissions-settings">Permissions</h4>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        You have permissions for the following clubs:
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="subscriptions">Request permissions</label>
+                        <select multiple class="form-control" name="subscriptions" id="subscriptions">
+                            <option value="" selected disabled>Begin typing to filter...</option>
+                                {% for permission in permissions %}
+                                  <option value="{{ permission }}">{{ permission }}</option>
+                                {% endfor %}
+                            <option value="None">None</option>
+                        </select>
+                    </div>
+                </div>
+                <hr class="mb-4">
+                <button class="btn btn-primary" type="submit">Submit Changes</button>
+            </form>
         </div>
-      </div>
-      <footer class="my-5 pt-5 text-muted text-center text-small">
-      </footer>
     </div>
+    <footer class="my-5 pt-5 text-muted text-center text-small">
+    </footer>
+</div>
 
 <!--
     <font color="white">
