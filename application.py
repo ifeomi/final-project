@@ -55,35 +55,65 @@ db = SQL("sqlite:///ClubPub.db")
 @app.route("/")
 @login_required
 def index():
+    # get all of the events in the database
     events = db.execute("SELECT * FROM events")
+    # get the current date
     now = datetime.datetime.now()
+    # format the current date
     currentdate = now.strftime("%m %d, %Y")
+    # format the current date for comparison
     currentdate = time.strptime(currentdate, "%m %d, %Y")
+    # loop through all of the events in the database
     for event in events:
+        # get the event id
         event_id = event["event_id"]
+        # get the date of the event
         date = event["date"]
+        # split the date into the start and end date if necessary
         splitdate = date.split("-")
+        # if there is a start and end date
         if len(splitdate) == 2:
+            # use the end date and format it for comparison
             enddate = time.strptime(splitdate[1], "%m/%d/%Y")
+            # if the end date of the event is before the current date, the event has already happened and can be deleted
             if enddate < currentdate:
+                # get the picture associated with the event, if applicable
                 photo = db.execute("SELECT picture FROM events WHERE event_id=:event_id", event_id=event_id)
+                # if there is a picture for the event
                 if photo[0]["picture"] != "":
+                    # get the picture
                     picture = photo[0]["picture"]
+                    # split the picture's destination to access the filename
                     destination = picture.split("/")
+                    # access the name of the picture
                     filename = destination[2]
+                    # delete the picture from the files
                     os.remove(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                # delete the event from the database
                 db.execute("DELETE FROM events WHERE event_id=:event_id", event_id=event_id)
+        # the event does not have a start and end date, only a start date
         else:
+            # get the date of the event
             startdate = time.strptime(splitdate[0], "%m/%d/%Y")
+            # if the date of the event is before the current date, the event has already happened and can be deleted
             if startdate < currentdate:
+                # get the picture associated with the event, if applicable
                 photo = db.execute("SELECT picture FROM events WHERE event_id=:event_id", event_id=event_id)
+                # if there is a picture for the event
                 if photo[0]["picture"] != "":
+                    # get the picture
                     picture = photo[0]["picture"]
+                    # split the picture's destination to access the filename
                     destination = picture.split("/")
+                    # access the name of the picture
                     filename = destination[2]
+                    # delete the picture from the files
                     os.remove(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                # delete the event from the database
                 db.execute("DELETE FROM events WHERE event_id=:event_id", event_id=event_id)
+    # get the updated events list
     events = db.execute("SELECT * FROM events JOIN clubs on events.club_id=clubs.club_id")
+    # display the event feed
     return render_template("index.html", events=events)
 
 
@@ -145,6 +175,7 @@ def settings():
 @app.route("/login", methods=["GET", "POST"])
 def login():
     """Log user in"""
+    # from problem set 8 - finance
 
     # Forget any user_id
     session.clear()
@@ -182,6 +213,7 @@ def login():
 @app.route("/logout")
 def logout():
     """Log user out"""
+    # from problem set 8 - finance
 
     # Forget any user_id
     session.clear()
@@ -193,6 +225,8 @@ def logout():
 @app.route("/register", methods=["GET", "POST"])
 def register():
     """Register user"""
+    # from our own implementation in problem set 8 - finance but with new features
+
     if request.method == "POST":
         # Store inputs in variables for easier access
         username = request.form.get("username")
@@ -293,54 +327,83 @@ def search():
 @app.route("/calendar", methods=["GET", "POST"])
 @login_required
 def calendar():
+    # display the calendar
     return render_template("calendar.html")
 
 
 @app.route("/eventsearch", methods=["GET"])
 @login_required
 def searchevent():
+    # get all of the possible tags
     tagNames = ["Academic", "Art", "Business", "Club Sports", "College Life", "Community Service", "Cultural", "Dance", "Free Food","Gender and Sexuality", "Government and Politics", "Health", "House Committee", "Media", "Offices", "Peer Counseling", "Performing Arts", "Pre-Professional", "Publications", "Religious", "Social", "Special Interests", "STEM", "Women’s Initiatives"]
+    # get all of the clubs
     clubs = db.execute("SELECT name FROM clubs")
+    # display the event search form
     return render_template("eventsearch.html", tags=tagNames, clubs=clubs)
 
 
 @app.route("/eventsearchtag")
 @login_required
 def eventsearchtag():
+    # get the tag the user wants to search by
     tag = request.args.get("tag")
+    # create a blank list to store the events with that tag in
     taggedevents = []
+    # get all of the events from the database
     events = db.execute("SELECT * FROM events")
+    # loop through the events
     for event in events:
+        # get the tags for the event from the database
         eventtags = event["tags"]
+        # separate the string of tags into a list
         eventtags = parse(eventtags)
+        # create a blank dictionary to store the event information in if it matches the event search
         taggedevent = {}
+        # if the searched tag is in the event tags
         if tag in eventtags:
+            # add the event information to the dictionary
             taggedevent.update(event)
+            # add the dictionary to the list of all matching events
             taggedevents.append(taggedevent)
+    # return the list of events that match the search to the webpage to be displayed
     return jsonify(taggedevents)
 
 
 @app.route("/eventsearchclub")
 @login_required
 def eventsearchclub():
+    # get the club the user wants to search by
     club = request.args.get("club")
+    # get all of the clubs from the database
     clubdata = db.execute("SELECT * FROM clubs WHERE name=:name", name=club)
+    # create a blank list ot store the events hosted by that club in
     clubevents = []
+    # get all of the events from the database
     events = db.execute("SELECT * FROM events")
+    # loop through the events
     for event in events:
+        # get the hosting club id for the event
         club_id = event["club_id"]
+        # create a blank dictionary to store the event information in if it matches the club search
         clubevent = {}
+        # if the searched club is hosting the event
         if club_id == clubdata[0]["club_id"]:
+            # add the event information to the dictionary
             clubevent.update(event)
+            # add the dictionary to the list of all matching events
             clubevents.append(clubevent)
+    # return the list of events that match the search to the webpage to be displayed
     return jsonify(clubevents)
 
 
 @app.route("/eventsearchtitle")
 @login_required
 def eventsearchtitle():
+    # get the word or letter the user is searching
     q = "'%" + request.args.get("q") + "%'"
+    # get events that have similar names to the searched word or letter
     results = db.execute("SELECT * FROM events WHERE title LIKE " + q)
+    # return the events that match the search to the webpage to be displayed
     return jsonify(results)
 
 
@@ -362,27 +425,44 @@ def preferences():
 @app.route("/permissions", methods=["GET", "POST"])
 @login_required
 def permissions():
+    # user reached route via post
     if request.method == "POST":
+        # get the club the user input
         club = request.form.get("userclub")
+        # if the user did not provide a club, return an error instructing them to do so
         if not club:
             return render_template("error.html", message="You must provide your club")
+        # get the name of the user that was input
         user = request.form.get("nameofuser")
+        # if a user's name was not provided, return an error instructing them to do so
         if not user:
             return render_template("error.html", message="You must provide the user you want to give permissions to")
+        # get the current permissions of the user who was selected from the database
         permissions = db.execute("SELECT permissions FROM users WHERE name = :name", name = user)
+        # start a blank list to update their permissions
         updatePermissions = []
+        # if the user does not currently have any permissions
         if permissions[0]["permissions"] == None:
+            # set their permissions equal to the club name
             permissions[0]["permissions"] = club
+            # append the list with the club name which they now have permissions for
             updatePermissions.append(club)
+        # if the user already has permissions for some clubs
         else:
-            #print(parse(permissions[0]["permissions"]).append(club))
+            # get their current permissions and put them into a list
             updatePermissions = parse(permissions[0]["permissions"])
+            # add their new permissions to the list
             updatePermissions.append(club)
+        # update their permissions in the database as a string separating the club names with commas
         db.execute("UPDATE users SET permissions=:permissions WHERE name=:name", permissions=rejoin(updatePermissions), name = user)
         return render_template("calendar.html")
+    # user reached route via get
     else:
+        # get all of the clubs
         clubs = db.execute("SELECT name FROM clubs")
+        # get all of the users
         users = db.execute("SELECT name FROM users")
+        # display the correct webpage with the clubs and users filled into the form
         return render_template("permissions.html", clubs=clubs, users=users)
 
 
