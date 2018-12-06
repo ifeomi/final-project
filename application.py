@@ -138,7 +138,7 @@ def check_email():
     """Return true if email not in use, else false, in JSON format"""
     # get the email from the user input from the form
     new_email = request.args.get("email")
-    # get all of the current usernames of users
+    # get all of the current emails of users
     currentEmails = db.execute("SELECT email FROM users")
     # iterate through each user
     for email in currentEmails:
@@ -195,7 +195,7 @@ def settings():
             if changes[change] != '':
                 db.execute("UPDATE users SET :change = :value WHERE id=:user_id", change=change, value=changes[change], user_id=session["user_id"])
 
-        # Make sure user fills out all fields
+        # Make sure user fills out all fields if they've filled out any
         if request.form.get("password") or request.form.get("new-password") or request.form.get("confirmation"):
             if not request.form.get("password"):
                 return render_template("error.html", message="Must provide password")
@@ -214,17 +214,21 @@ def settings():
                 else:
                     return render_template("error.html", message="New passwords do not match")
         return redirect("/settings")
+
     # User reached route via get
     else:
         # get relevant tables
         user = db.execute("SELECT * FROM users WHERE id = :user_id", user_id = session["user_id"])[0]
-        print(user["preferences"])
         clubs = db.execute("SELECT * FROM clubs")
         subscriptions = [int(x) for x in parse(user["subscriptions"])]
+
+        # initialize empty arrays
         not_subbed = []
         subbed = []
         preferences = []
         not_preferences = []
+
+        # populate arrays based on if the user hasn't already indicated preference
         for club in clubs:
             if club["club_id"] in subscriptions:
                 subbed.append(club["name"])
@@ -321,35 +325,12 @@ def register():
 
         # Sends permission email to club
         if permissions != None:
-            server = smtplib.SMTP("smtp.gmail.com", 587)
-            server.starttls()
-            server.login("cs50projectchi@gmail.com", "carissahunterife")
+            emailList = []
+            for club in permissions:
+                email = db.execute("SELECT email FROM clubs WHERE name=:name", name = club_name)[0]["email"]
+                emailList.append(email)
+            send_email(emailList, "Verify Posting Permissions", "Hi! A student has requested to post events on behalf of your club. Please verify their club membership through this link: http://ide50-omidiran.cs50.io:8080/permissions")
 
-            # Create message container - the correct MIME type is multipart/alternative.
-            msg = MIMEMultipart('alternative')
-
-            # Create the body of the message (a plain-text and an HTML version).
-            text = "Hi! A student has requested to post events on behalf of your club. Please verify their club membership through this link: "
-            html = """\
-            <html>
-              <head></head>
-              <body>
-                <p>Hi! A student has requested to post events on behalf of your club. Please verify their club membership through this <a href="http://ide50-carissawu.cs50.io:8080/permissions">link</a>.
-                </p>
-              </body>
-            </html>
-            """
-            # Record the MIME types of both parts - text/plain and text/html.
-            part1 = MIMEText(text, 'plain')
-            part2 = MIMEText(html, 'html')
-
-            # Attach parts into message container.
-            # According to RFC 2046, the last part of a multipart message, in this case
-            # the HTML message, is best and preferred.
-            msg.attach(part1)
-            msg.attach(part2)
-
-            server.sendmail("cs50projectchi@gmail.com", "carissawu2009@gmail.com", msg.as_string())
 
         # If insertion returns null, then username must be taken
         result = db.execute("INSERT INTO users (username, hash, name, email, preferences, permissions) VALUES(:username, :hashed, :name, :email, :preferences, :permissions)",
