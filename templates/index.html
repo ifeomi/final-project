@@ -7,7 +7,11 @@
 {% block main %}
 <main class="container p-5">
     <!-- from https://getbootstrap.com/docs/4.0/components/card/ -->
-    <p class="heading"><font color="white">Upcoming Events</p></font>
+    <p class="heading"><font color="white">Upcoming Events</p>
+    <form action="/preferences" method="POST">
+        <input type="checkbox" name="preferences" value="preferences">Only view events with preferred tags</font><br>
+        <button class="btn btn-primary" type="submit">Apply</button><br><br>
+    </form>
     <!-- prints events in order from most to least recent -->
     {% for event in events[::-1] %}
     <div class="card border-danger mb-3">
