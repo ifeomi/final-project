@@ -365,6 +365,7 @@ def permissions():
 def createevent():
     # Create the list of possible tags for events
     tagNames = ["Academic", "Art", "Business", "Club Sports", "College Life", "Community Service", "Cultural", "Dance", "Free Food","Gender and Sexuality", "Government and Politics", "Health", "House Committee", "Media", "Offices", "Peer Counseling", "Performing Arts", "Pre-Professional", "Publications", "Religious", "Social", "Special Interests", "STEM", "Women’s Initiatives"]
+    # user reached route via post
     if request.method == "POST":
         # Store user inputs and return relevant error is user didn't input a required variable
         # Store the event name
@@ -607,14 +608,19 @@ def createevent():
         send_email(emailList, "New event posted by one of your clubs", "One of the clubs you subscribe to just posted a new event. Check it out!")
 
         return render_template("index.html", events = db.execute("SELECT * FROM events JOIN clubs on events.club_id=clubs.club_id"))
+    # user reached route via get
     else:
+        # get the permission for the user
         userpermissions = db.execute("SELECT permissions FROM users WHERE id=:id", id=session["user_id"])
+        # if the user has no permissions, they can not access the page
         if userpermissions[0]["permissions"] == None or userpermissions[0]["permissions"] == "":
             return render_template("error.html", message="You do not have permissions to post for any clubs. Please wait for your club to approve of your club membership")
-        else:
-            clubs = db.execute("SELECT name FROM clubs")
-            months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
-            return render_template("createevent.html", clubs=clubs, tags=tagNames, months = months)
+        # store the club names
+        clubs = db.execute("SELECT name FROM clubs")
+        # store the months
+        months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+        # return the template for creating an event with relevant information
+        return render_template("createevent.html", clubs=clubs, tags=tagNames, months = months)
 
 
 def errorhandler(e):
