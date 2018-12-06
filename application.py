@@ -55,15 +55,38 @@ db = SQL("sqlite:///ClubPub.db")
 @app.route("/")
 @login_required
 def index():
-    # events = club_db.execute("SELECT * FROM events")
-    # now = datetime.datetime.now()
-    # currentdate = now.strftime("%m %d, %Y")
-    # currentdate = time.strptime(currentdate, "%m %d, %Y")
-    # for event in events:
-        # event_id = event["event_id"]
-        # eventdate = time.strptime(event["date"], "%m %d, %Y")
-        # if eventdate < currentdate:
-            # club_db.execute("DELETE FROM events WHERE event_id=:event_id", event_id=event_id)
+    events = db.execute("SELECT * FROM events")
+    now = datetime.datetime.now()
+    currentdate = now.strftime("%m %d, %Y")
+    currentdate = time.strptime(currentdate, "%m %d, %Y")
+    for event in events:
+        event_id = event["event_id"]
+        date = event["date"]
+        splitdate = date.split("-")
+        if len(splitdate) == 2:
+            enddate = time.strptime(splitdate[1], "%m/%d/%Y")
+            if enddate < currentdate:
+                photo = db.execute("SELECT picture FROM events WHERE event_id=:event_id", event_id=event_id)
+                if photo[0]["picture"] != "":
+                    picture = photo[0]["picture"]
+                    destination = picture.split("/")
+                    filename = destination[2]
+                    os.remove(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                picture = photo[0]["picture"]
+                destination = picture.split("/")
+                filename = destination[2]
+                os.remove(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                db.execute("DELETE FROM events WHERE event_id=:event_id", event_id=event_id)
+        else:
+            startdate = time.strptime(splitdate[0], "%m/%d/%Y")
+            if startdate < currentdate:
+                photo = db.execute("SELECT picture FROM events WHERE event_id=:event_id", event_id=event_id)
+                if photo[0]["picture"] != "":
+                    picture = photo[0]["picture"]
+                    destination = picture.split("/")
+                    filename = destination[2]
+                    os.remove(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                db.execute("DELETE FROM events WHERE event_id=:event_id", event_id=event_id)
     events = db.execute("SELECT * FROM events")
     return render_template("index.html", events=events)
 
