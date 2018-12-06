@@ -22,6 +22,8 @@ def login_required(f):
 
 def parse(text):
     """Splits SQL text into list. Text should be delimited by a comma."""
+    if text == None:
+        return text
     return text.split(',')
 
 def rejoin(textList):

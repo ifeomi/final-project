@@ -55,15 +55,38 @@ db = SQL("sqlite:///ClubPub.db")
 @app.route("/")
 @login_required
 def index():
-    # events = club_db.execute("SELECT * FROM events")
-    # now = datetime.datetime.now()
-    # currentdate = now.strftime("%m %d, %Y")
-    # currentdate = time.strptime(currentdate, "%m %d, %Y")
-    # for event in events:
-        # event_id = event["event_id"]
-        # eventdate = time.strptime(event["date"], "%m %d, %Y")
-        # if eventdate < currentdate:
-            # club_db.execute("DELETE FROM events WHERE event_id=:event_id", event_id=event_id)
+    events = db.execute("SELECT * FROM events")
+    now = datetime.datetime.now()
+    currentdate = now.strftime("%m %d, %Y")
+    currentdate = time.strptime(currentdate, "%m %d, %Y")
+    for event in events:
+        event_id = event["event_id"]
+        date = event["date"]
+        splitdate = date.split("-")
+        if len(splitdate) == 2:
+            enddate = time.strptime(splitdate[1], "%m/%d/%Y")
+            if enddate < currentdate:
+                photo = db.execute("SELECT picture FROM events WHERE event_id=:event_id", event_id=event_id)
+                if photo[0]["picture"] != "":
+                    picture = photo[0]["picture"]
+                    destination = picture.split("/")
+                    filename = destination[2]
+                    os.remove(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                picture = photo[0]["picture"]
+                destination = picture.split("/")
+                filename = destination[2]
+                os.remove(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                db.execute("DELETE FROM events WHERE event_id=:event_id", event_id=event_id)
+        else:
+            startdate = time.strptime(splitdate[0], "%m/%d/%Y")
+            if startdate < currentdate:
+                photo = db.execute("SELECT picture FROM events WHERE event_id=:event_id", event_id=event_id)
+                if photo[0]["picture"] != "":
+                    picture = photo[0]["picture"]
+                    destination = picture.split("/")
+                    filename = destination[2]
+                    os.remove(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                db.execute("DELETE FROM events WHERE event_id=:event_id", event_id=event_id)
     events = db.execute("SELECT * FROM events")
     return render_template("index.html", events=events)
 
@@ -195,14 +218,12 @@ def register():
             msg = MIMEMultipart('alternative')
 
             # Create the body of the message (a plain-text and an HTML version).
-            text = "Hi!\nHow are you?\nHere is the link you wanted:\nhttp://www.python.org"
+            text = "Hi! A student has requested to post events on behalf of your club. Please verify their club membership through this link: "
             html = """\
             <html>
               <head></head>
               <body>
-                <p>Hi!<br>
-                   How are you?<br>
-                   Here is the <a href="http://www.python.org">link</a> you wanted.
+                <p>Hi! A student has requested to post events on behalf of your club. Please verify their club membership through this <a href="http://ide50-carissawu.cs50.io:8080/permissions">link</a>.
                 </p>
               </body>
             </html>
@@ -221,7 +242,7 @@ def register():
 
         # If insertion returns null, then username must be taken
         result = db.execute("INSERT INTO users (username, hash, name, email, preferences, permissions) VALUES(:username, :hashed, :name, :email, :preferences, :permissions)",
-        username=username, hashed=generate_password_hash(password), name=name, email=email, preferences=rejoin(preferences), permissions=rejoin(permissions))
+        username=username, hashed=generate_password_hash(password), name=name, email=email, preferences=rejoin(preferences), permissions=None)
 
         if not result:
             return render_template("error.html", message="Username is taken")
@@ -315,7 +336,6 @@ def eventsearchtitle():
     results = db.execute("SELECT * FROM events WHERE title LIKE " + q)
     return jsonify(results)
 
-
 @app.route("/permissions", methods=["GET", "POST"])
 @login_required
 def permissions():
@@ -326,7 +346,16 @@ def permissions():
         user = request.form.get("nameofuser")
         if not user:
             return render_template("error.html", message="You must provide the user you want to give permissions to")
-        db.execute("UPDATE users SET permissions=:permissions WHERE name=:name", permissions=club, name=user)
+        permissions = db.execute("SELECT permissions FROM users WHERE name = :name", name = user)
+        updatePermissions = []
+        if permissions[0]["permissions"] == None:
+            permissions[0]["permissions"] = club
+            updatePermissions.append(club)
+        else:
+            #print(parse(permissions[0]["permissions"]).append(club))
+            updatePermissions = parse(permissions[0]["permissions"])
+            updatePermissions.append(club)
+        db.execute("UPDATE users SET permissions=:permissions WHERE name=:name", permissions=rejoin(updatePermissions), name = user)
         return render_template("calendar.html")
     else:
         clubs = db.execute("SELECT name FROM clubs")
@@ -491,7 +520,7 @@ def createevent():
     else:
         userpermissions = db.execute("SELECT permissions FROM users WHERE id=:id", id=session["user_id"])
         if userpermissions[0]["permissions"] == None or userpermissions[0]["permissions"] == "":
-            return render_template("error.html", message="You do not have permissions to post for any clubs")
+            return render_template("error.html", message="You do not have permissions to post for any clubs. Please wait for your club to approve of your club membership")
         else:
             clubs = db.execute("SELECT name FROM clubs")
             months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
