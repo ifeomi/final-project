@@ -34,6 +34,8 @@ UPLOAD_FOLDER = "static/images/"
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # Ensure responses aren't cached
+
+
 @app.after_request
 def after_request(response):
     response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
@@ -50,7 +52,9 @@ Session(app)
 
 # Configure CS50 Library to use SQLite database, preferences global list
 db = SQL("sqlite:///ClubPub.db")
-all_preferences = ["Free Food", "Academic and Pre-Professional", "College Life", "Creative and Performing Arts", "Cultural and Racial Initiatives", "Gender and Sexuality", "Government and Politics", "Health and Wellness", "Hobbies and Special Interests", "Media and Publications", "PBHA", "Peer Counseling/Peer Education", "Public Service", "Religious and Spiritual Life", "SEAS", "Social Organization", "Women's Initiatives"]
+all_preferences = ["Free Food", "Academic and Pre-Professional", "College Life", "Creative and Performing Arts", "Cultural and Racial Initiatives", "Gender and Sexuality", "Government and Politics", "Health and Wellness",
+                   "Hobbies and Special Interests", "Media and Publications", "PBHA", "Peer Counseling/Peer Education", "Public Service", "Religious and Spiritual Life", "SEAS", "Social Organization", "Women's Initiatives"]
+
 
 @app.route("/")
 @login_required
@@ -166,7 +170,7 @@ def settings():
         new_subscriptions = request.form.getlist("subscriptions")
         if new_subscriptions:
             for club_name in new_subscriptions:
-                club_id = db.execute("SELECT club_id FROM clubs WHERE name=:name", name = club_name)[0]["club_id"]
+                club_id = db.execute("SELECT club_id FROM clubs WHERE name=:name", name=club_name)[0]["club_id"]
                 if club_id not in subscriptions:
                     subscriptions.append(str(club_id))
 
@@ -185,15 +189,18 @@ def settings():
         emailList = []
         if permissions_requests:
             for club_name in permissions_requests:
-                email = db.execute("SELECT email FROM clubs WHERE name=:name", name = club_name)[0]["email"]
+                email = db.execute("SELECT email FROM clubs WHERE name=:name", name=club_name)[0]["email"]
                 emailList.append(email)
-        send_email(emailList, "Verify Posting Permissions", "Hi! A student has requested to post events on behalf of your club. Please verify their club membership through this link: http://ide50-omidiran.cs50.io:8080/permissions")
+        send_email(emailList, "Verify Posting Permissions",
+                   "Hi! A student has requested to post events on behalf of your club. Please verify their club membership through this link: http://ide50-omidiran.cs50.io:8080/permissions")
 
-        db.execute("UPDATE users SET preferences = :preferences, subscriptions=:subscriptions WHERE id=:user_id", preferences=rejoin(preferences), subscriptions=rejoin(subscriptions), user_id=session["user_id"])
+        db.execute("UPDATE users SET preferences = :preferences, subscriptions=:subscriptions WHERE id=:user_id",
+                   preferences=rejoin(preferences), subscriptions=rejoin(subscriptions), user_id=session["user_id"])
 
         for change in changes:
             if changes[change] != '':
-                db.execute("UPDATE users SET :change = :value WHERE id=:user_id", change=change, value=changes[change], user_id=session["user_id"])
+                db.execute("UPDATE users SET :change = :value WHERE id=:user_id",
+                           change=change, value=changes[change], user_id=session["user_id"])
 
         # Make sure user fills out all fields if they've filled out any
         if request.form.get("password") or request.form.get("new-password") or request.form.get("confirmation"):
@@ -204,12 +211,13 @@ def settings():
             elif not request.form.get("confirmation"):
                 return render_template("error.html", message="Must confirm password")
 
-            rows = db.execute("SELECT hash FROM users WHERE id = :user_id",user_id=session["user_id"])
+            rows = db.execute("SELECT hash FROM users WHERE id = :user_id", user_id=session["user_id"])
             if not check_password_hash(rows[0]["hash"], request.form.get("password")):
                 return render_template("error.html", message="Invalid password")
             else:
                 if request.form.get("new-password") == request.form.get("confirmation"):
-                    db.execute("UPDATE users SET hash = :hashedpass WHERE id = :user_id", hashedpass=generate_password_hash(request.form.get("new-password")), user_id=session["user_id"])
+                    db.execute("UPDATE users SET hash = :hashedpass WHERE id = :user_id",
+                               hashedpass=generate_password_hash(request.form.get("new-password")), user_id=session["user_id"])
                     return redirect("/")
                 else:
                     return render_template("error.html", message="New passwords do not match")
@@ -244,7 +252,7 @@ def settings():
             else:
                 not_preferences.append(preference)
 
-        return render_template("settings.html", user=user, clubs=clubs, subscriptions = subbed, not_subscribed = not_subbed, preferences=preferences, not_preferences=not_preferences, permissions = parse(user["permissions"]))
+        return render_template("settings.html", user=user, clubs=clubs, subscriptions=subbed, not_subscribed=not_subbed, preferences=preferences, not_preferences=not_preferences, permissions=parse(user["permissions"]))
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -322,7 +330,6 @@ def register():
         if password != confirmation:
             return render_template("error.html", message="Passwords do not match")
 
-
         # Sends permission email to club
         if permissions != None:
             emailList = []
@@ -334,7 +341,7 @@ def register():
 
         # If insertion returns null, then username must be taken
         result = db.execute("INSERT INTO users (username, hash, name, email, preferences, permissions) VALUES(:username, :hashed, :name, :email, :preferences, :permissions)",
-        username=username, hashed=generate_password_hash(password), name=name, email=email, preferences=rejoin(preferences), permissions=None)
+                            username=username, hashed=generate_password_hash(password), name=name, email=email, preferences=rejoin(preferences), permissions=None)
 
         if not result:
             return render_template("error.html", message="Username is taken")
@@ -345,7 +352,7 @@ def register():
         return redirect("/")
 
     else:
-        return render_template("register.html", clubs = db.execute("SELECT name FROM clubs"), preferences = all_preferences)
+        return render_template("register.html", clubs=db.execute("SELECT name FROM clubs"), preferences=all_preferences)
 
 
 @app.route("/clubs", methods=["GET", "POST"])
@@ -357,19 +364,21 @@ def clubs():
         subscriptions = [int(x) for x in parse(row["subscriptions"])]
 
         num = len(clubs)
-        return render_template("clubs.html", clubs=clubs, num=num, subscribed_clubs = subscriptions)
+        return render_template("clubs.html", clubs=clubs, num=num, subscribed_clubs=subscriptions)
     else:
         subscription = request.form.get("subscribe")
-        row = db.execute("SELECT * FROM users WHERE id = :user_id", user_id=session["user_id"])[0]
+        row = db.execute("SELECT * FROM users WHERE id = :user_id",
+                         user_id=session["user_id"])[0]
         if row["subscriptions"]:
             clubsList = parse(row["subscriptions"])
             if subscription not in clubsList:
                 clubsList.append(subscription)
         else:
             clubsList = subscription
-        db.execute("UPDATE users SET subscriptions = :subscriptions WHERE id = :user_id", user_id=session["user_id"], subscriptions=rejoin(clubsList))
-
+        db.execute("UPDATE users SET subscriptions = :subscriptions WHERE id = :user_id",
+                   user_id=session["user_id"], subscriptions=rejoin(clubsList))
         return redirect("/")
+
 
 @app.route("/search")
 def search():
@@ -463,7 +472,7 @@ def eventsearchtitle():
 @app.route("/preferences", methods=["POST"])
 @login_required
 def preferences():
-    preferences = db.execute("SELECT preferences FROM users WHERE id = :user_id",user_id=session["user_id"])
+    preferences = db.execute("SELECT preferences FROM users WHERE id = :user_id", user_id=session["user_id"])
     events = []
     for preference in parse(preferences[0]["preferences"]):
         print(db.execute("SELECT * FROM events WHERE instr(tags, :preference) > 0", preference=preference))
@@ -472,7 +481,7 @@ def preferences():
     print("EVENTS:")
     print(events)
     print(db.execute("SELECT * FROM events JOIN clubs on events.club_id=clubs.club_id"))
-    return render_template("index.html", events = events)
+    return render_template("index.html", events=events)
 
 
 @app.route("/permissions", methods=["GET", "POST"])
@@ -491,7 +500,7 @@ def permissions():
         if not user:
             return render_template("error.html", message="You must provide the user you want to give permissions to")
         # get the current permissions of the user who was selected from the database
-        permissions = db.execute("SELECT permissions FROM users WHERE name = :name", name = user)
+        permissions = db.execute("SELECT permissions FROM users WHERE name = :name", name=user)
         # start a blank list to update their permissions
         updatePermissions = []
         # if the user does not currently have any permissions
@@ -507,7 +516,7 @@ def permissions():
             # add their new permissions to the list
             updatePermissions.append(club)
         # update their permissions in the database as a string separating the club names with commas
-        db.execute("UPDATE users SET permissions=:permissions WHERE name=:name", permissions=rejoin(updatePermissions), name = user)
+        db.execute("UPDATE users SET permissions=:permissions WHERE name=:name", permissions=rejoin(updatePermissions), name=user)
         return render_template("calendar.html")
     # user reached route via get
     else:
@@ -632,9 +641,8 @@ def createevent():
         if not endampm:
             return render_template("error.html", message="You must provide an ending time (am/pm)")
 
-
         # verify that the user has permission to post for the club they are trying to post for
-        permissions = db.execute("SELECT permissions FROM users WHERE id = :user_id",user_id=session["user_id"])
+        permissions = db.execute("SELECT permissions FROM users WHERE id = :user_id", user_id=session["user_id"])
         for i in range(len(parse(permissions[0]["permissions"]))):
             # if the user has permission for the club allow them to post
             if parse(permissions[0]["permissions"])[i] == club:
@@ -715,7 +723,7 @@ def createevent():
 
         # add the event to the database
         db.execute("INSERT INTO events (club_id, title, description, picture, tags, date, time, location) VALUES(:club_id, :title, :description, :picture, :tags, :date, :time, :location)",
-        club_id=club_id[0]["club_id"], title=title, description=description, picture=picturelink, tags=rejoin(tags), date=eventdate, time=eventtime, location = location)
+                   club_id=club_id[0]["club_id"], title=title, description=description, picture=picturelink, tags=rejoin(tags), date=eventdate, time=eventtime, location=location)
 
         # The file token.json stores the user's access and refresh tokens, and is
         # created automatically when the authorization flow completes for the first
@@ -731,7 +739,7 @@ def createevent():
         SCOPES = ['https://www.googleapis.com/auth/calendar']
         SERVICE_ACCOUNT_FILE = '/home/ubuntu/workspace/final-project/service.json'
         credentials = service_account.Credentials.from_service_account_file(
-        SERVICE_ACCOUNT_FILE, scopes=SCOPES)
+            SERVICE_ACCOUNT_FILE, scopes=SCOPES)
         service = googleapiclient.discovery.build('calendar', 'v3', credentials=credentials)
         event = {
             'summary': title,
@@ -769,7 +777,8 @@ def createevent():
                 if str(club_id[0]["club_id"]) in clubsList:
                     emailList.append(row["email"])
         print(emailList)
-        send_email(emailList, "New event posted by one of your clubs", "One of the clubs you subscribe to just posted a new event. Check it out at http://ide50-omidiran.cs50.io:8080!")
+        send_email(emailList, "New event posted by one of your clubs",
+                   "One of the clubs you subscribe to just posted a new event. Check it out at http://ide50-omidiran.cs50.io:8080!")
 
         return redirect("/")
     # user reached route via get
@@ -782,9 +791,10 @@ def createevent():
         # store the club names
         clubs = db.execute("SELECT name FROM clubs")
         # store the months
-        months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+        months = ["January", "February", "March", "April", "May", "June",
+                  "July", "August", "September", "October", "November", "December"]
         # return the template for creating an event with relevant information
-        return render_template("createevent.html", clubs=clubs, tags=tagNames, months = months)
+        return render_template("createevent.html", clubs=clubs, tags=tagNames, months=months)
 
 
 def errorhandler(e):
