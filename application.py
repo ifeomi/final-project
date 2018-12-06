@@ -72,11 +72,6 @@ def index():
                     destination = picture.split("/")
                     filename = destination[2]
                     os.remove(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-                picture = photo[0]["picture"]
-                destination = picture.split("/")
-                filename = destination[2]
-                os.remove(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-                db.execute("DELETE FROM events WHERE event_id=:event_id", event_id=event_id)
         else:
             startdate = time.strptime(splitdate[0], "%m/%d/%Y")
             if startdate < currentdate:
