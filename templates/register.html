@@ -5,6 +5,7 @@
 {% endblock %}
 
 {% block main %}
+<main class="container p-5">
     <form id="register-form" action="/register" method="post">
         <div class="form-group">
             <input autofocus class="form-control" name="name" placeholder="Name" type="text" required>
@@ -76,4 +77,5 @@
             });
         };
     </script>
+</main>
 {% endblock %}
