@@ -51,6 +51,16 @@ body
     background-image: linear-gradient(rgba(26, 26, 26, 0.4), rgba(26, 26, 26, 0.4)), url(https://www.timeshighereducation.com/sites/default/files/styles/the_breaking_news_image_style/public/harvard_0.jpg?itok=NgKJw4gS);
     background-size: cover;
 }
+
+h6
+{
+    color:gray;
+}
+
+.white
+{
+    color:white;
+}
 /*
 .container
 {
