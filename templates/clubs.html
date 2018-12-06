@@ -12,9 +12,8 @@
                 <input type="text" name="q" autocomplete="off" class="form-control" placeholder="Search" id="search">
             </div>
         </form>
-        <div class="row" id="row">
+        <div class="card-columns" id="deck">
             {% for club in clubs %}
-            <div class="col">
                 <div class="card" style="width: 18rem;">
                     <div class="card-body">
                         <h5 class="card-title"> {{ club["name"] }} </h5>
@@ -27,7 +26,6 @@
                         </form>
                     </div>
                 </div>
-            </div>
             {% endfor %}
         </div>
     </div>
@@ -54,7 +52,7 @@
                     </div>\
                     </div>';
                 }
-                document.getElementById('row').innerHTML = html;
+                document.getElementById('deck').innerHTML = html;
             });
         };
 

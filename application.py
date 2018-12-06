@@ -110,8 +110,7 @@ def settings():
     # User reached route via get
     else:
         user = db.execute("SELECT * FROM users WHERE id = :user_id", user_id = session["user_id"])[0]
-        permissions = db.execute("SELECT permissions FROM users WHERE id = :user_id", user_id = session["user_id"])
-        return render_template("settings.html", username = user["username"], permissions = permissions)
+        return render_template("settings.html", username = user["username"], name = user["name"], email = user["email"], subscriptions = parse(user["subscriptions"]), permissions = parse(user["permissions"]))
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -480,11 +479,11 @@ def createevent():
 
         for row in rows:
             print(row["subscriptions"])
-            clubsList = parse(row["subscriptions"])
-            print(clubsList)
-            print(str(club_id))
-            if str(club_id[0]["club_id"]) in clubsList:
-                emailList.append(row["email"])
+            row = db.execute("SELECT * FROM users WHERE id = :user_id", user_id=session["user_id"])[0]
+            if row["subscriptions"]:
+                clubsList = parse(row["subscriptions"])
+                if str(club_id[0]["club_id"]) in clubsList:
+                    emailList.append(row["email"])
         print(emailList)
         send_email(emailList, "New event posted by one of your clubs", "One of the clubs you subscribe to just posted a new event. Check it out!")
 
