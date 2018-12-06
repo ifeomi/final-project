@@ -107,24 +107,34 @@ def check():
 def settings():
     # User reached route via post
     if request.method == "POST":
+        changes = {
+            "name": request.form.get("name"),
+            "username": request.form.get("username"),
+            "email": request.form.get("email"),
+        }
+        for change in changes:
+            if changes[change] != '':
+                db.execute("UPDATE users SET :change = :value WHERE id=:user_id", change=change, value=changes[change], user_id=session["user_id"])
 
         # Make sure user fills out all fields
-        if not request.form.get("password"):
-            return render_template("error.html", message="Must provide password")
-        elif not request.form.get("new-password"):
-            return render_template("error.html", message="Must provide new password")
-        elif not request.form.get("confirmation"):
-            return render_template("error.html", message="Must confirm password")
+        if request.form.get("password") or request.form.get("new-password") or request.form.get("confirmation"):
+            if not request.form.get("password"):
+                return render_template("error.html", message="Must provide password")
+            elif not request.form.get("new-password"):
+                return render_template("error.html", message="Must provide new password")
+            elif not request.form.get("confirmation"):
+                return render_template("error.html", message="Must confirm password")
 
-        rows = db.execute("SELECT hash FROM users WHERE id = :user_id",user_id=session["user_id"])
-        if not check_password_hash(rows[0]["hash"], request.form.get("password")):
-            return render_template("error.html", message="Invalid password")
-        else:
-            if request.form.get("new-password") == request.form.get("confirmation"):
-                db.execute("UPDATE users SET hash = :hashedpass WHERE id = :user_id", hashedpass=generate_password_hash(request.form.get("new-password")), user_id=session["user_id"])
-                return redirect("/")
+            rows = db.execute("SELECT hash FROM users WHERE id = :user_id",user_id=session["user_id"])
+            if not check_password_hash(rows[0]["hash"], request.form.get("password")):
+                return render_template("error.html", message="Invalid password")
             else:
-                return render_template("error.html", message="New passwords do not match")
+                if request.form.get("new-password") == request.form.get("confirmation"):
+                    db.execute("UPDATE users SET hash = :hashedpass WHERE id = :user_id", hashedpass=generate_password_hash(request.form.get("new-password")), user_id=session["user_id"])
+                    return redirect("/")
+                else:
+                    return render_template("error.html", message="New passwords do not match")
+        return redirect("/")
     # User reached route via get
     else:
         user = db.execute("SELECT * FROM users WHERE id = :user_id", user_id = session["user_id"])[0]
