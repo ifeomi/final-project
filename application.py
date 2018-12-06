@@ -373,13 +373,18 @@ def register():
 def clubs():
     if request.method == "GET":
         clubs = db.execute("SELECT * FROM clubs")
-        return render_template("clubs.html", clubs=clubs)
+        row = db.execute("SELECT subscriptions FROM users WHERE id = :user_id", user_id=session["user_id"])[0]
+        subscriptions = [int(x) for x in parse(row["subscriptions"])]
+
+        num = len(clubs)
+        return render_template("clubs.html", clubs=clubs, num=num, subscribed_clubs = subscriptions)
     else:
         subscription = request.form.get("subscribe")
         row = db.execute("SELECT * FROM users WHERE id = :user_id", user_id=session["user_id"])[0]
         if row["subscriptions"]:
             clubsList = parse(row["subscriptions"])
-            clubsList.append(subscription)
+            if subscription not in clubsList:
+                clubsList.append(subscription)
         else:
             clubsList = subscription
         db.execute("UPDATE users SET subscriptions = :subscriptions WHERE id = :user_id", user_id=session["user_id"], subscriptions=rejoin(clubsList))

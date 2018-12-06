@@ -8,23 +8,46 @@
 <main class="container p-5">
     <div class="container">
         <form>
-            <!-- to-do: fix sizing of button -->
             <div class="form-group">
                 <input type="text" name="q" autocomplete="off" class="form-control" placeholder="Search" id="search">
             </div>
         </form>
         <div class="card-columns" id="deck">
-            {% for club in clubs %}
+            {% for i in range(num) %}
                 <div class="card" style="width: 18rem;">
                     <div class="card-body">
-                        <h5 class="card-title"> {{ club["name"] }} </h5>
-                        <h6 class="card-subtitle mb-2 text-muted">Category: {{ club["category"] }} </h6>
-                        <p class="card-text"> {{ club["purpose"] }} </p>
-                        <a href="mailto:{{club["email"]}}" class="card-link"> {{ club["email"] }} </a>
+                        <h5 class="card-title"> {{ clubs[i]["name"] }} </h5>
+                        <h6 class="card-subtitle mb-2 text-muted">Category: {{ clubs[i]["category"] }} </h6>
+                        <p class="card-text"> <button type="button" data-toggle="modal" data-target="#modal-for-{{i}}" class="btn btn-primary btn-sm">View purpose</button> </p>
+                        <a href="mailto:{{clubs[i]["email"]}}" class="card-link"> {{ clubs[i]["email"] }} </a>
                         <form action="/clubs" method="post">
-                            <input type="hidden" name="subscribe" value="{{club["club_id"]}}">
+                            <input type="hidden" name="subscribe" value="{{clubs[i]["club_id"]}}">
+                            {% if clubs[i]["club_id"] in subscribed_clubs %}
+                            <button type="button" class="btn btn-secondary btn-sm">Subscribed</button>
+                            {% else %}
                             <button type="submit" class="btn btn-primary btn-sm">Subscribe</button>
+                            {% endif %}
+
                         </form>
+
+                        <div class="modal fade" id="modal-for-{{i}}" tabindex="-1" role="dialog" aria-labelledby="label-for-{{i}}" aria-hidden="true">
+                          <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                              <div class="modal-header">
+                                <h5 class="modal-title" id="label-for-{{i}}">{{ clubs[i]["name"] }}</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                  <span aria-hidden="true">&times;</span>
+                                </button>
+                              </div>
+                              <div class="modal-body">
+                                {{ clubs[i]["purpose"] }}
+                              </div>
+                              <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
                     </div>
                 </div>
             {% endfor %}
@@ -38,21 +61,39 @@
         input.onkeyup = function() {
             $.get('/search?q=' + input.value, function(data) {
                 let html='';
+                let count=0
                 for (club of data) {
-                    html += '<div class="col">\
-                    <div class="card" style="width: 18rem;">\
-                    <div class="card-body">\
-                    <h5 class="card-title">' + club["name"] +'</h5>\
-                    <h6 class="card-subtitle mb-2 text-muted">Category: ' + club["category"] + '</h6>\
-                    <p class="card-text">' + club["purpose"] + '</p>\
-                    <a href="mailto:'+ club["email"] + '" class="card-link"> ' + club["email"] + '</a>\
-                    <form action="/clubs" method="post">\
-                    <input type="hidden" name="subscribe" value="' + club["club_id"] + '">\
-                    <button type="submit" class="btn btn-primary btn-sm">Subscribe</button>\
-                    </form>\
+                    html += '<div class="card-columns" id="deck">\
+                                <div class="card" style="width: 18rem;">\
+                                    <div class="card-body">\
+                                        <h5 class="card-title">' + club["name"] + '</h5>\
+                                        <h6 class="card-subtitle mb-2 text-muted">Category:' + club["category"] + '</h6>\
+                                        <p class="card-text"> <button type="button" data-toggle="modal" data-target="#modal-for-'+ count + '" class="btn btn-primary btn-sm">View purpose</button> </p>\
+                                        <a href="mailto:'+club["email"]+'" class="card-link">'+ club["email"] + '</a>\
+                                        <form action="/clubs" method="post">\
+                                            <input type="hidden" name="subscribe" value="'+ club["club_id"] +'">\
+                                            <button type="submit" class="btn btn-primary btn-sm">Subscribe</button>\
+                                        </form>\
+                                     <div class="modal fade" id="modal-for-' + count +'" tabindex="-1" role="dialog" aria-labelledby="label-for-' + count +'" aria-hidden="true">\
+                                        <div class="modal-dialog" role="document">\
+                                            <div class="modal-content">\
+                                            <div class="modal-header">\
+                                            <h5 class="modal-title" id="label-for-' + count +'">' + club["name"] + '</h5>\
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">\
+                                            <span aria-hidden="true">&times;</span>\
+                                            </button>\
+                                        </div>\
+                                        <div class="modal-body">' + club["purpose"] + '</div>\
+                              <div class="modal-footer">\
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>\
+                              </div>\
+                            </div>\
+                          </div>\
+                        </div>\
                     </div>\
-                    </div>\
-                    </div>';
+                </div>\
+        </div>';
+        count++
                 }
                 document.getElementById('deck').innerHTML = html;
             });
