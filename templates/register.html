@@ -23,25 +23,11 @@
             <input class="form-control" name="confirmation" placeholder="Confirm password" type="password">
         </div>
         <div class="form-group">
-            <h5><font color="white">Select club categories you're interested in</font></h5>
+            <h5><font color="white">Select club and event categories you're interested in</font></h5>
             <select class="custom-select form-control" name="preferences" multiple>
-                <option value="Free Food">Free Food</option>
-                <option value="Academic and Pre-Professional">Academic and Pre-Professional</option>
-                <option value="College Life">College Life</option>
-                <option value="Creative and Performing Arts">Creative and Performing Arts</option>
-                <option value="Cultural and Racial Initiatives">Cultural and Racial Initiatives</option>
-                <option value="Gender and Sexuality">Gender and Sexuality</option>
-                <option value="Government and Politics">Government and Politics</option>
-                <option value="Health and Wellness">Health and Wellness</option>
-                <option value="Hobbies and Special Interests">Hobbies and Special Interests</option>
-                <option value="Media and Publications">Media and Publications</option>
-                <option value="PBHA">PBHA</option>
-                <option value="Peer Counseling/Peer Education">Peer Counseling/Peer Education</option>
-                <option value="Public Service">Public Service</option>
-                <option value="Religious and Spiritual Life">Religious and Spiritual Life</option>
-                <option value="SEAS">SEAS</option>
-                <option value="Social Organization">Social Organization</option>
-                <option value="Women's Initiatives">Women's Initiatives</option>
+                {% for preference in preferences %}
+                    <option value="{{ preference }}">{{ preference }}</option>
+                {% endfor %}
             </select>
         </div>
         <div>
