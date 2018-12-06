@@ -132,6 +132,7 @@ def check():
     # the username is not taken, the user can use it and return true
     return jsonify(True)
 
+
 @app.route("/check-email", methods=["GET"])
 def check_email():
     """Return true if email not in use, else false, in JSON format"""
