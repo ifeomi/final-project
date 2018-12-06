@@ -368,7 +368,7 @@ def calendar():
 @app.route("/eventsearch", methods=["GET"])
 @login_required
 def searchevent():
-    tagNames = ["Academic", "Art", "Business", "Club Sports", "College Life", "Community Service", "Cultural", "Dance", "Free Food","Gender and Sexuality", "Government and Politics", "Health", "House Committee", "Media", "Offices", "Peer Counseling", "Performing Arts", "Pre-Professional", "Publications", "Religious", "Social", "Special Interests", "STEM", "Women’s Initiatives"]
+    tagNames = all_preferences
     clubs = db.execute("SELECT name FROM clubs")
     return render_template("eventsearch.html", tags=tagNames, clubs=clubs)
 
@@ -459,7 +459,7 @@ def permissions():
 @login_required
 def createevent():
     # Create the list of possible tags for events
-    tagNames = ["Academic", "Art", "Business", "Club Sports", "College Life", "Community Service", "Cultural", "Dance", "Free Food","Gender and Sexuality", "Government and Politics", "Health", "House Committee", "Media", "Offices", "Peer Counseling", "Performing Arts", "Pre-Professional", "Publications", "Religious", "Social", "Special Interests", "STEM", "Women’s Initiatives"]
+    tagNames = all_preferences
     # user reached route via post
     if request.method == "POST":
         # Store user inputs and return relevant error is user didn't input a required variable
