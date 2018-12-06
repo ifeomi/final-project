@@ -314,7 +314,6 @@ def eventsearchtitle():
     results = db.execute("SELECT * FROM events WHERE title LIKE " + q)
     return jsonify(results)
 
-
 @app.route("/permissions", methods=["GET", "POST"])
 @login_required
 def permissions():
