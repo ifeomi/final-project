@@ -1,13 +1,18 @@
 from cs50 import SQL
 from helpers import parse, send_email
+import datetime
+import time
 
-# db = SQL("sqlite:///ClubPub.db")
+starthour = "01"
+startminutes = "30"
+startampm = "am"
+endhour = "01"
+endminutes = "30"
+endampm = "pm"
 
-# userpermissions = db.execute("SELECT permissions FROM users WHERE id=:id", id="2")
-# print(userpermissions[0]["permissions"])
-# if userpermissions[0]["permissions"] == None:
-#     print("You do not have permission")
-# else:
-#     print("You have permission")
-[]
-send_email(["omidiran@college.harvard.edu"], "Test", "Test")
+starttime = starthour + ":" + startminutes + startampm
+endtime = endhour + ":" + endminutes + endampm
+formattedstarttime = time.strptime(starttime, "%I:%M%p")
+formattedendtime = time.strptime(endtime, "%I:%M%p")
+print(formattedstarttime)
+print(formattedendtime)

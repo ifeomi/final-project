@@ -72,6 +72,7 @@ def index():
                     destination = picture.split("/")
                     filename = destination[2]
                     os.remove(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                db.execute("DELETE FROM events WHERE event_id=:event_id", event_id=event_id)
         else:
             startdate = time.strptime(splitdate[0], "%m/%d/%Y")
             if startdate < currentdate:
@@ -82,7 +83,7 @@ def index():
                     filename = destination[2]
                     os.remove(os.path.join(app.config['UPLOAD_FOLDER'], filename))
                 db.execute("DELETE FROM events WHERE event_id=:event_id", event_id=event_id)
-    events = db.execute("SELECT * FROM events")
+    events = db.execute("SELECT * FROM events JOIN clubs on events.club_id=clubs.club_id")
     return render_template("index.html", events=events)
 
 
@@ -331,6 +332,7 @@ def eventsearchtitle():
     results = db.execute("SELECT * FROM events WHERE title LIKE " + q)
     return jsonify(results)
 
+
 @app.route("/permissions", methods=["GET", "POST"])
 @login_required
 def permissions():
@@ -361,101 +363,194 @@ def permissions():
 @app.route("/createevent", methods=["GET", "POST"])
 @login_required
 def createevent():
+    # Create the list of possible tags for events
     tagNames = ["Academic", "Art", "Business", "Club Sports", "College Life", "Community Service", "Cultural", "Dance", "Free Food","Gender and Sexuality", "Government and Politics", "Health", "House Committee", "Media", "Offices", "Peer Counseling", "Performing Arts", "Pre-Professional", "Publications", "Religious", "Social", "Special Interests", "STEM", "Women’s Initiatives"]
     if request.method == "POST":
-        # Store inputs in variables for easier access
-
-        # Return relevant error is user didn't input one variable
+        # Store user inputs and return relevant error is user didn't input a required variable
+        # Store the event name
         title = request.form.get("eventname")
+        # Return error if title was not provided
         if not title:
             return render_template("error.html", message="You must provide an event name")
+        # Store the club
         club = request.form.get("club")
+        # Return error if club was not provided
         if not club:
             return render_template("error.html", message="You must provide a club")
+        # Store the clubid for the club input to put in database
         club_id = db.execute("SELECT club_id FROM clubs WHERE name=:club", club=club)
+        # Store the description
         description = request.form.get("description")
+        # Store whether or not a user wants to upload a photo
         pictureuploadcheck = request.form.get("pictureuploadcheck")
+        # Return error if the picture upload preference was not provided
         if not pictureuploadcheck:
             return render_template("error.html", message="You must say whether or not you want to upload a picture")
+        # If the user wants to upload a photo
         if pictureuploadcheck == "yes":
-            picture = request.files["picture"]
+            # Try to store the picture from the form
+            try:
+                picture = request.files["picture"]
+            # Either the user did not provide a photo or provided an invalid image
+            except:
+                return render_template("error.html", message="You did not provide an image and you stated you wanted to upload one, or you provided an invalid image")
+            # Create the file
+            # Get the title of the event for the filename
             nospaces = title.replace(" ", "")
+            # Store the filename
             filename = nospaces + ".jpg"
+            # Save the picture to the images folder
             picture.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            # Store the link to the picture
             picturelink = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        # If the user does not want to upload a photo, store no path to a photo
         else:
             picturelink = ""
+        # Store the location
         location = request.form.get("location")
+        # Return error if no location is provided
         if not location:
             return render_template("error.html", message="You must provide a location")
-        tags = request.form.get("tags")
+        # Store the start month
         startmonth = request.form.get("startmonth")
+        # Return error if no start month was provided
         if not startmonth:
             return render_template("error.html", message="You must provide a starting date (month)")
+        # Store the start day
         startday = request.form.get("startday")
+        # Return error if no start day was provided
         if not startday:
             return render_template("error.html", message="You must provide a starting date (day)")
+        # Store the start year
         startyear = request.form.get("startyear")
+        # Return error if no start year was provided
         if not startyear:
             return render_template("error.html", message="You must provide a starting date (year)")
+        # Store the end month
         endmonth = request.form.get("endmonth")
+        # Return error if no end month was provided
         if not endmonth:
             return render_template("error.html", message="You must provide an ending date (month)")
+        # Store the end day
         endday = request.form.get("endday")
+        # Return error if no end day was provided
         if not endday:
             return render_template("error.html", message="You must provide an ending date (day)")
+        # Store the end year
         endyear = request.form.get("endyear")
+        # Return error if no end year was provided
         if not endyear:
             return render_template("error.html", message="You must provide an ending date (year)")
+        # Store the start hour
         starthour = request.form.get("starthour")
+        # Return error if no start hour was provided
         if not starthour:
             return render_template("error.html", message="You must provide a starting time (hour)")
+        # Store the start minutes
         startminutes = request.form.get("startminutes")
+        # Return error if no start minutes were provided
         if not startminutes:
             return render_template("error.html", message="You must provide a starting time (minutes)")
+        # Store the start am pm
         startampm = request.form.get("startampm")
+        # Return error if no start am pm was provided
         if not startampm:
             return render_template("error.html", message="You must provide a starting time (am/pm)")
+        # Store the end hour
         endhour = request.form.get("endhour")
+        # Return error if no end hour was provided
         if not endhour:
             return render_template("error.html", message="You must provide an ending time (hour)")
+        # Store the end minutes
         endminutes = request.form.get("endminutes")
+        # Return error if no end minutes were provided
         if not endminutes:
             return render_template("error.html", message="You must provide an ending time (minutes)")
+        # Store the end am pm
         endampm = request.form.get("endampm")
+        # Return error if no end am pm was provided
         if not endampm:
             return render_template("error.html", message="You must provide an ending time (am/pm)")
+        # if the start am pm is am
         if startampm == "AM":
+            # get the end hour in the proper format for the Google Calendar event
             starthourmilitary = int(starthour) + 12
             starthour = str(starthourmilitary)
+        # if the end am pm is am
         if endampm == "AM":
+            # get the end hour in the proper format for the Google Calendar event
             endhourmilitary = int(endhour) + 12
             endhour = str(endhourmilitary)
 
+        # verify that the user has permission to post for the club they are trying to post for
         permissions = db.execute("SELECT permissions FROM users WHERE id = :user_id",user_id=session["user_id"])
         for i in range(len(parse(permissions[0]["permissions"]))):
+            # if the user has permission for the club allow them to post
             if parse(permissions[0]["permissions"])[i] == club:
                 print(parse(permissions[0]["permissions"])[i])
                 print(club)
                 break
+            # if the user does not have permission return an error
             if i == len(parse(permissions[0]["permissions"]))-1:
                 return render_template("error.html", message="Sorry, but you do not have permission to post events for this club")
 
+        # format the start date and time and end date and time for the Google Calendar event
         startdateandtime = startyear + "-" + startmonth + "-" + startday + "T" + starthour + ":" + startminutes + ":00-05:00"
         enddateandtime = endyear + "-" + endmonth + "-" + endday + "T" + endhour + ":" + endminutes + ":00-05:00"
 
+        # initialize an empty list ot store tags in
         tags = []
+
+        # Go through all of the tags and check if the user selected that tag for the event
         for tag in tagNames:
             value = request.form.get(tag)
+            # If the user did select the tag, add it to the list
             if value != None:
                 tags.append(tag)
 
-        date = startmonth + "/" + startday + "/" + startyear + "-" + endmonth + "/" + endday + "/" + endyear
-        time = starthour + ":" + startminutes + startampm + "-" + endhour + ":" + endminutes + endampm
-        club_id = db.execute("SELECT club_id FROM clubs WHERE name=:club", club=club)
+        # format the start date
+        startdate = startmonth + "/" + startday + "/" + startyear
+        # format the end date
+        enddate = endmonth + "/" + endday + "/" + endyear
+        # format the start date for comparison
+        formattedstartdate = time.strptime(startdate, "%m/%d/%Y")
+        # format the end date for comparison
+        formattedenddate = time.strptime(enddate, "%m/%d/%Y")
 
+        # if the start and end date are the same, store the event with one date
+        if formattedstartdate == formattedenddate:
+            eventdate = startdate
+        else:
+            # if the end date is before the start date, return an error
+            if formattedenddate < formattedstartdate:
+                return render_template("error.html", message="You must provide an end date that is the same day as or after the start date")
+            # store the event date in the proper format
+            eventdate = startdate + "-" + enddate
+
+        # format the start time
+        starttime = starthour + ":" + startminutes + startampm
+        # format the end time
+        endtime = endhour + ":" + endminutes + endampm
+        # format the start time for comparison
+        formattedstarttime = time.strptime(starttime, "%I:%M%p")
+        # format the end time for comparison
+        formattedendtime = time.strptime(endtime, "%I:%M%p")
+
+        # if the start and end time are the same, store the event with one time
+        if starttime == endtime:
+            eventtime = starttime
+        else:
+            # if the event is on the same day, test the time
+            if formattedstartdate == formattedenddate:
+                # if the end time is before the start time, return an error
+                if formattedendtime < formattedstarttime:
+                    return render_template("error.html", message="You must provide an end time that is equal to or after your start time")
+            # store the event time in the proper format
+            eventtime = starttime + "-" + endtime
+
+        # add the event to the database
         db.execute("INSERT INTO events (club_id, title, description, picture, tags, date, time, location) VALUES(:club_id, :title, :description, :picture, :tags, :date, :time, :location)",
-        club_id=club_id[0]["club_id"], title=title, description=description, picture=picturelink, tags=rejoin(tags), date=date, time=time, location = location)
+        club_id=club_id[0]["club_id"], title=title, description=description, picture=picturelink, tags=rejoin(tags), date=eventdate, time=eventtime, location = location)
 
         # The file token.json stores the user's access and refresh tokens, and is
         # created automatically when the authorization flow completes for the first
@@ -511,7 +606,7 @@ def createevent():
         print(emailList)
         send_email(emailList, "New event posted by one of your clubs", "One of the clubs you subscribe to just posted a new event. Check it out!")
 
-        return render_template("index.html", events = db.execute("SELECT * FROM events"))
+        return render_template("index.html", events = db.execute("SELECT * FROM events JOIN clubs on events.club_id=clubs.club_id"))
     else:
         userpermissions = db.execute("SELECT permissions FROM users WHERE id=:id", id=session["user_id"])
         if userpermissions[0]["permissions"] == None or userpermissions[0]["permissions"] == "":
