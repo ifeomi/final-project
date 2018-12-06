@@ -374,13 +374,18 @@ def register():
 def clubs():
     if request.method == "GET":
         clubs = db.execute("SELECT * FROM clubs")
-        return render_template("clubs.html", clubs=clubs)
+        row = db.execute("SELECT subscriptions FROM users WHERE id = :user_id", user_id=session["user_id"])[0]
+        subscriptions = [int(x) for x in parse(row["subscriptions"])]
+
+        num = len(clubs)
+        return render_template("clubs.html", clubs=clubs, num=num, subscribed_clubs = subscriptions)
     else:
         subscription = request.form.get("subscribe")
         row = db.execute("SELECT * FROM users WHERE id = :user_id", user_id=session["user_id"])[0]
         if row["subscriptions"]:
             clubsList = parse(row["subscriptions"])
-            clubsList.append(subscription)
+            if subscription not in clubsList:
+                clubsList.append(subscription)
         else:
             clubsList = subscription
         db.execute("UPDATE users SET subscriptions = :subscriptions WHERE id = :user_id", user_id=session["user_id"], subscriptions=rejoin(clubsList))
@@ -404,9 +409,8 @@ def calendar():
 @app.route("/eventsearch", methods=["GET"])
 @login_required
 def searchevent():
-    # get all of the possible tags
-    tagNames = ["Academic", "Art", "Business", "Club Sports", "College Life", "Community Service", "Cultural", "Dance", "Free Food","Gender and Sexuality", "Government and Politics", "Health", "House Committee", "Media", "Offices", "Peer Counseling", "Performing Arts", "Pre-Professional", "Publications", "Religious", "Social", "Special Interests", "STEM", "Women’s Initiatives"]
-    # get all of the clubs
+    # get all of the possible tags and clubs
+    tagNames = all_preferences
     clubs = db.execute("SELECT name FROM clubs")
     # display the event search form
     return render_template("eventsearch.html", tags=tagNames, clubs=clubs)
@@ -540,7 +544,7 @@ def permissions():
 @login_required
 def createevent():
     # Create the list of possible tags for events
-    tagNames = ["Academic", "Art", "Business", "Club Sports", "College Life", "Community Service", "Cultural", "Dance", "Free Food","Gender and Sexuality", "Government and Politics", "Health", "House Committee", "Media", "Offices", "Peer Counseling", "Performing Arts", "Pre-Professional", "Publications", "Religious", "Social", "Special Interests", "STEM", "Women’s Initiatives"]
+    tagNames = all_preferences
     # user reached route via post
     if request.method == "POST":
         # Store user inputs and return relevant error is user didn't input a required variable
