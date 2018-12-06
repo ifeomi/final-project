@@ -48,9 +48,9 @@ app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
-# Configure CS50 Library to use SQLite database
+# Configure CS50 Library to use SQLite database, preferences global list
 db = SQL("sqlite:///ClubPub.db")
-
+all_preferences = ["Free Food", "Academic and Pre-Professional", "College Life", "Creative and Performing Arts", "Cultural and Racial Initiatives", "Gender and Sexuality", "Government and Politics", "Health and Wellness", "Hobbies and Special Interests", "Media and Publications", "PBHA", "Peer Counseling/Peer Education", "Public Service", "Religious and Spiritual Life", "SEAS", "Social Organization", "Women's Initiatives"]
 
 @app.route("/")
 @login_required
@@ -132,17 +132,64 @@ def check():
     # the username is not taken, the user can use it and return true
     return jsonify(True)
 
+@app.route("/check-email", methods=["GET"])
+def check_email():
+    """Return true if email not in use, else false, in JSON format"""
+    # get the email from the user input from the form
+    new_email = request.args.get("email")
+    # get all of the current usernames of users
+    currentEmails = db.execute("SELECT email FROM users")
+    # iterate through each user
+    for email in currentEmails:
+        # if the email the current user is trying to use already exists, return false and notify them, via the javascript, that the username is taken
+        if email["email"] == new_email:
+            return jsonify(False)
+    # the email is not taken, the user can use it and return true
+    return jsonify(True)
+
 
 @app.route("/settings", methods=["GET", "POST"])
 @login_required
 def settings():
     # User reached route via post
     if request.method == "POST":
+        user = db.execute("SELECT * FROM users WHERE id = :user_id", user_id=session["user_id"])[0]
         changes = {
             "name": request.form.get("name"),
             "username": request.form.get("username"),
             "email": request.form.get("email"),
         }
+
+        # append club IDs of selected clubs
+        subscriptions = parse(user["subscriptions"])
+        new_subscriptions = request.form.getlist("subscriptions")
+        if new_subscriptions:
+            for club_name in new_subscriptions:
+                club_id = db.execute("SELECT club_id FROM clubs WHERE name=:name", name = club_name)[0]["club_id"]
+                if club_id not in subscriptions:
+                    subscriptions.append(str(club_id))
+
+        # append name of selected preferences
+        preferences = parse(user["preferences"])
+        if preferences == None:
+            preferences = []
+        new_preferences = request.form.getlist("preferences")
+        if new_preferences:
+            for pref in new_preferences:
+                if pref not in preferences:
+                    preferences.append(pref)
+
+        # send permissions email to clubs
+        permissions_requests = request.form.getlist("permissions")
+        emailList = []
+        if permissions_requests:
+            for club_name in permissions_requests:
+                email = db.execute("SELECT email FROM clubs WHERE name=:name", name = club_name)[0]["email"]
+                emailList.append(email)
+        send_email(emailList, "Verify Posting Permissions", "Hi! A student has requested to post events on behalf of your club. Please verify their club membership through this link: http://ide50-omidiran.cs50.io:8080/permissions")
+
+        db.execute("UPDATE users SET preferences = :preferences, subscriptions=:subscriptions WHERE id=:user_id", preferences=rejoin(preferences), subscriptions=rejoin(subscriptions), user_id=session["user_id"])
+
         for change in changes:
             if changes[change] != '':
                 db.execute("UPDATE users SET :change = :value WHERE id=:user_id", change=change, value=changes[change], user_id=session["user_id"])
@@ -165,11 +212,34 @@ def settings():
                     return redirect("/")
                 else:
                     return render_template("error.html", message="New passwords do not match")
-        return redirect("/")
+        return redirect("/settings")
     # User reached route via get
     else:
+        # get relevant tables
         user = db.execute("SELECT * FROM users WHERE id = :user_id", user_id = session["user_id"])[0]
-        return render_template("settings.html", username = user["username"], name = user["name"], email = user["email"], subscriptions = parse(user["subscriptions"]), permissions = parse(user["permissions"]))
+        print(user["preferences"])
+        clubs = db.execute("SELECT * FROM clubs")
+        subscriptions = [int(x) for x in parse(user["subscriptions"])]
+        not_subbed = []
+        subbed = []
+        preferences = []
+        not_preferences = []
+        for club in clubs:
+            if club["club_id"] in subscriptions:
+                subbed.append(club["name"])
+            else:
+                not_subbed.append(club["name"])
+        for preference in all_preferences:
+            if user["preferences"]:
+                if preference in parse(user["preferences"]):
+                    preferences.append(preference)
+                else:
+                    not_preferences.append(preference)
+            # if user has no preferences
+            else:
+                not_preferences.append(preference)
+
+        return render_template("settings.html", user=user, clubs=clubs, subscriptions = subbed, not_subscribed = not_subbed, preferences=preferences, not_preferences=not_preferences, permissions = parse(user["permissions"]))
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -295,8 +365,7 @@ def register():
         # Add permissions to user database
 
     else:
-        tagNames = ["Academic", "Art", "Business", "Club Sports", "College Life", "Community Service", "Cultural", "Dance", "Free Food","Gender and Sexuality", "Government and Politics", "Health", "House Committee", "Media", "Offices", "Peer Counseling", "Performing Arts", "Pre-Professional", "Publications", "Religious", "Social", "Special Interests", "STEM", "Women’s Initiatives"]
-        return render_template("register.html", clubs = db.execute("SELECT name FROM clubs"), tags = tagNames)
+        return render_template("register.html", clubs = db.execute("SELECT name FROM clubs"), preferences = all_preferences)
 
 
 @app.route("/clubs", methods=["GET", "POST"])
@@ -590,7 +659,7 @@ def createevent():
                 break
             # if the user does not have permission return an error
             if i == len(parse(permissions[0]["permissions"]))-1:
-                return render_template("error.html", message="Sorry, but you do not have permission to post events for this club")
+                return render_template("error.html", message="Sorry, but you do not have permission to post events for this club. Request permissions on settings in order to be authorized to post events.")
 
         # convert to military time to put into calendar
         if startampm == "pm":
@@ -683,7 +752,7 @@ def createevent():
         event = {
             'summary': title,
             'location': location,
-            'description': club,
+            'description': description,
             'start': {
                 'dateTime': startdateandtime,
                 'timeZone': 'America/New_York',
@@ -716,7 +785,7 @@ def createevent():
                 if str(club_id[0]["club_id"]) in clubsList:
                     emailList.append(row["email"])
         print(emailList)
-        send_email(emailList, "New event posted by one of your clubs", "One of the clubs you subscribe to just posted a new event. Check it out!")
+        send_email(emailList, "New event posted by one of your clubs", "One of the clubs you subscribe to just posted a new event. Check it out at http://ide50-omidiran.cs50.io:8080!")
 
         return redirect("/")
     # user reached route via get

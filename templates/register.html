@@ -25,8 +25,8 @@
         <div class="form-group">
             <h5><font color="white">Select event categories you're interested in</font></h5>
             <select class="custom-select form-control" name="preferences" multiple>
-                {% for tag in tags %}
-                    <option value="{{ tag }}">{{ tag }}</option>
+                {% for preference in preferences %}
+                    <option value="{{ preference }}">{{ preference }}</option>
                 {% endfor %}
             </select>
         </div>
