@@ -413,6 +413,21 @@ def eventsearchtitle():
     return jsonify(results)
 
 
+@app.route("/preferences", methods=["POST"])
+@login_required
+def preferences():
+    preferences = db.execute("SELECT preferences FROM users WHERE id = :user_id",user_id=session["user_id"])
+    events = []
+    for preference in parse(preferences[0]["preferences"]):
+        print(db.execute("SELECT * FROM events WHERE instr(tags, :preference) > 0", preference=preference))
+        if db.execute("SELECT * FROM events WHERE instr(tags, :preference) > 0", preference=preference) != []:
+            events += (db.execute("SELECT * FROM events WHERE instr(tags, :preference) > 0", preference=preference))
+    print("EVENTS:")
+    print(events)
+    print(db.execute("SELECT * FROM events JOIN clubs on events.club_id=clubs.club_id"))
+    return render_template("index.html", events = events)
+
+
 @app.route("/permissions", methods=["GET", "POST"])
 @login_required
 def permissions():
@@ -552,16 +567,7 @@ def createevent():
         # Return error if no end am pm was provided
         if not endampm:
             return render_template("error.html", message="You must provide an ending time (am/pm)")
-        # if the start am pm is am
-        if startampm == "AM":
-            # get the end hour in the proper format for the Google Calendar event
-            starthourmilitary = int(starthour) + 12
-            starthour = str(starthourmilitary)
-        # if the end am pm is am
-        if endampm == "AM":
-            # get the end hour in the proper format for the Google Calendar event
-            endhourmilitary = int(endhour) + 12
-            endhour = str(endhourmilitary)
+
 
         # verify that the user has permission to post for the club they are trying to post for
         permissions = db.execute("SELECT permissions FROM users WHERE id = :user_id",user_id=session["user_id"])
@@ -575,9 +581,23 @@ def createevent():
             if i == len(parse(permissions[0]["permissions"]))-1:
                 return render_template("error.html", message="Sorry, but you do not have permission to post events for this club. Request permissions on settings in order to be authorized to post events.")
 
+        # convert to military time to put into calendar
+        if startampm == "pm":
+            # get the end hour in the proper format for the Google Calendar event
+            starthourmilitary = int(starthour) + 12
+            starthourmilitary = str(starthourmilitary)
+        else:
+            starthourmilitary = starthour
+        if endampm == "pm":
+            # get the end hour in the proper format for the Google Calendar event
+            endhourmilitary = int(endhour) + 12
+            endhourmilitary = str(endhourmilitary)
+        else:
+            endhourmilitary = endhour
+
         # format the start date and time and end date and time for the Google Calendar event
-        startdateandtime = startyear + "-" + startmonth + "-" + startday + "T" + starthour + ":" + startminutes + ":00-05:00"
-        enddateandtime = endyear + "-" + endmonth + "-" + endday + "T" + endhour + ":" + endminutes + ":00-05:00"
+        startdateandtime = startyear + "-" + startmonth + "-" + startday + "T" + starthourmilitary + ":" + startminutes + ":00-05:00"
+        enddateandtime = endyear + "-" + endmonth + "-" + endday + "T" + endhourmilitary + ":" + endminutes + ":00-05:00"
 
         # initialize an empty list ot store tags in
         tags = []
@@ -687,7 +707,7 @@ def createevent():
         print(emailList)
         send_email(emailList, "New event posted by one of your clubs", "One of the clubs you subscribe to just posted a new event. Check it out at http://ide50-omidiran.cs50.io:8080!")
 
-        return render_template("index.html", events = db.execute("SELECT * FROM events JOIN clubs on events.club_id=clubs.club_id"))
+        return redirect("/")
     # user reached route via get
     else:
         # get the permission for the user

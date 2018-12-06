@@ -45,7 +45,7 @@
             $.get('/eventsearchtag?tag=' + tag, function(data) {
                 let html='';
                 for (item of data) {
-                    html += '<div class="col"><div class="card" style="width: 18rem;"><div class="card-body"><h5 class="card-title">' + item["title"] +'</h5><h6 class="card-subtitle mb-2 text-muted">' + item["date"] + " " + item["time"] + '</h6><p class="card-text">' + item["description"] + '</p></div></div></div>';
+                    html += '<div class="col"><div class="card" style="width: 18rem;"><div class="card-body"><h5 class="card-title">' + item["title"] +'</h5><h6 class="card-subtitle mb-2 text-muted">' + item["date"] + "<br>" + item["time"] + "<br>" + item["location"] + '</h6><p class="card-text">' + item["description"] + '</p></div></div></div>';
                 }
                 document.getElementById('row').innerHTML = html;
             });
@@ -57,7 +57,7 @@
             $.get('/eventsearchclub?club=' + club, function(data) {
                 let html='';
                 for (item of data) {
-                    html += '<div class="col"><div class="card" style="width: 18rem;"><div class="card-body"><h5 class="card-title">' + item["title"] +'</h5><h6 class="card-subtitle mb-2 text-muted">' + item["date"] + " " + item["time"] + '</h6><p class="card-text">' + item["description"] + '</p></div></div></div>';
+                    html += '<div class="col"><div class="card" style="width: 18rem;"><div class="card-body"><h5 class="card-title">' + item["title"] +'</h5><h6 class="card-subtitle mb-2 text-muted">' + item["date"] + "<br>" + item["time"] + "<br>" + item["location"] + '</h6><p class="card-text">' + item["description"] + '</p></div></div></div>';
                 }
                 document.getElementById('row').innerHTML = html;
             document.getElementById(".clubform").submit();
@@ -67,8 +67,8 @@
         input.onkeyup = function() {
             $.get('/eventsearchtitle?q=' + input.value, function(data) {
                 let html='';
-                for (dat of data) {
-                    html += '<div class="col"><div class="card" style="width: 18rem;"><div class="card-body"><h5 class="card-title">' + dat["title"] +'</h5><h6 class="card-subtitle mb-2 text-muted">' + dat["date"] + " " + dat["time"] + '</h6><p class="card-text">' + dat["description"] + '</p></div></div></div>'
+                for (item of data) {
+                    html += '<div class="col"><div class="card" style="width: 18rem;"><div class="card-body"><h5 class="card-title">' + item["title"] +'</h5><h6 class="card-subtitle mb-2 text-muted">' + item["date"] + "<br>" + item["time"] + "<br>" + item["location"] + '</h6><p class="card-text">' + item["description"] + '</p></div></div></div>'
                 }
                 document.getElementById('row').innerHTML = html;
             });

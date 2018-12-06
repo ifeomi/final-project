@@ -5,34 +5,37 @@
 {% endblock %}
 
 {% block main %}
+<<<<<<< HEAD
+<!-- modeled off of Bootstrap's checkout demo https://getbootstrap.com/docs/4.1/examples/checkout/ -->
     <div class="container white">
       <div class="py-5 text-center">
         <h2 class="page-title">User Settings</h2>
       </div>
       <div class="row">
         <div class="col-md-4 order-md-2 mb-4">
-          <h4 class="d-flex justify-content-between align-items-center mb-3">
-            Navigate
-          </h4>
-          <ul class="list-group mb-3">
-            <li class="list-group-item d-flex justify-content-between lh-condensed">
-                <h6 class="my-0"><a href="#account-information">Account Information</a></h6>
-            </li>
-            <li class="list-group-item d-flex justify-content-between lh-condensed">
-                <h6 class="my-0"><a href="#change-password">Change Password</a></h6>
-            </li>
-            <li class="list-group-item d-flex justify-content-between lh-condensed">
-                <h6 class="my-0"><a href="#subscriptions-settings">Subscriptions</a></h6>
-            </li>
-            <li class="list-group-item d-flex justify-content-between lh-condensed">
-                <h6 class="my-0"><a href="#preferences-settings">Preferences</a></h6>
-            </li>
-            <li class="list-group-item d-flex justify-content-between lh-condensed">
-                <h6 class="my-0"><a href="#permissions-settings">Permissions</a></h6>
-            </li>
-          </ul>
+            <h4 class="d-flex justify-content-between align-items-center mb-3">
+                Navigate
+            </h4>
+            <ul class="list-group mb-3">
+                <li class="list-group-item d-flex justify-content-between lh-condensed">
+                    <h6 class="my-0"><a href="#account-information">Account Information</a></h6>
+                </li>
+                <li class="list-group-item d-flex justify-content-between lh-condensed">
+                    <h6 class="my-0"><a href="#change-password">Change Password</a></h6>
+                </li>
+                <li class="list-group-item d-flex justify-content-between lh-condensed">
+                    <h6 class="my-0"><a href="#subscriptions-settings">Subscriptions</a></h6>
+                </li>
+                <li class="list-group-item d-flex justify-content-between lh-condensed">
+                    <h6 class="my-0"><a href="#preferences-settings">Preferences</a></h6>
+                </li>
+                <li class="list-group-item d-flex justify-content-between lh-condensed">
+                    <h6 class="my-0"><a href="#permissions-settings">Permissions</a></h6>
+                </li>
+            </ul>
         </div>
         <div class="col-md-8 order-md-1">
+<<<<<<< HEAD
           <h4 class="mb-3" id="account-information">Account Information</h4>
           <form id="settings-form" action="/settings" method="post">
             <div class="row">
@@ -137,9 +140,6 @@
             <button class="btn btn-primary" type="submit">Submit Changes</button>
           </form>
         </div>
-      </div>
-      <footer class="my-5 pt-5 text-muted text-center text-small">
-      </footer>
     </div>
     <script>
         document.querySelector("form").onsubmit = function(event) {
@@ -167,6 +167,9 @@
             });
         };
     </script>
+    <footer class="my-5 pt-5 text-muted text-center text-small">
+    </footer>
+</div>
 
 <!--
     <font color="white">
