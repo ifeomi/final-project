@@ -52,6 +52,7 @@ Session(app)
 
 # Configure CS50 Library to use SQLite database, preferences global list
 db = SQL("sqlite:///ClubPub.db")
+# Create a list of preferences
 all_preferences = ["Free Food", "Academic and Pre-Professional", "College Life", "Creative and Performing Arts", "Cultural and Racial Initiatives", "Gender and Sexuality", "Government and Politics", "Health and Wellness",
                    "Hobbies and Special Interests", "Media and Publications", "PBHA", "Peer Counseling/Peer Education", "Public Service", "Religious and Spiritual Life", "SEAS", "Social Organization", "Women's Initiatives"]
 
@@ -59,6 +60,7 @@ all_preferences = ["Free Food", "Academic and Pre-Professional", "College Life",
 @app.route("/")
 @login_required
 def index():
+    """Display all events for the future"""
     # get all of the events in the database
     events = db.execute("SELECT * FROM events")
     # get the current date
@@ -158,6 +160,7 @@ def check_email():
 def settings():
     # User reached route via post
     if request.method == "POST":
+        # get the users from the database
         user = db.execute("SELECT * FROM users WHERE id = :user_id", user_id=session["user_id"])[0]
         changes = {
             "name": request.form.get("name"),
@@ -260,20 +263,14 @@ def settings():
             else:
                 not_subbed.append(club["name"])
         for preference in all_preferences:
-            print(user["preferences"])
-            print(parse(user["preferences"]))
             if user["preferences"] != None and user["preferences"] != '':
                 if preference in parse(user["preferences"]):
                     preferences.append(preference)
-                    print("Adding "+preference+" to preferences")
                 else:
                     not_preferences.append(preference)
-                    print("Adding "+preference+" to not preferences")
             # if user has no preferences
             else:
                 not_preferences.append(preference)
-            print(preferences)
-            print(not_preferences)
         return render_template("settings.html", user=user, clubs=clubs, subscriptions=subbed, not_subscribed=not_subbed, preferences=preferences, not_preferences=not_preferences, permissions=permissions)
 
 
@@ -331,6 +328,7 @@ def register():
     """Register user"""
     # from our own implementation in problem set 8 - finance but with new features
 
+    # user reached route via post
     if request.method == "POST":
         # Store inputs in variables for easier access
         username = request.form.get("username")
@@ -358,56 +356,78 @@ def register():
                 email = db.execute("SELECT email FROM clubs WHERE name=:name", name=club)[0]["email"]
                 emailList.append(email)
             send_email(emailList, "Verify Posting Permissions",
-                       "Hi! A student has requested to post events on behalf of your club. Please verify their club membership through this link: http://ide50-omidiran.cs50.io:8080/permissions")
+                       "Hi! A student has requested to post events on behalf of your club. Please verify their club membership through this link: http://ide50-carissawu.cs50.io:8080/permissions")
 
         # If insertion returns null, then username must be taken
         result = db.execute("INSERT INTO users (username, hash, name, email, preferences, permissions) VALUES(:username, :hashed, :name, :email, :preferences, :permissions)",
                             username=username, hashed=generate_password_hash(password), name=name, email=email, preferences=rejoin(preferences), permissions=None)
-
+        # Return the relevant error
         if not result:
             return render_template("error.html", message="Username is taken")
-
+        # get the user from the database
         rows = db.execute("SELECT * FROM users WHERE username = :username", username=username)
-
+        # store the user id
         session["user_id"] = rows[0]["id"]
+        # redirect to index
         return redirect("/")
-
+    # user reached route via get
     else:
+        # show the register form
         return render_template("register.html", clubs=db.execute("SELECT name FROM clubs"), preferences=all_preferences)
 
 
 @app.route("/clubs", methods=["GET", "POST"])
 @login_required
 def clubs():
+    # the user reached the route via get get
     if request.method == "GET":
+        # get the clubs from the database
         clubs = db.execute("SELECT * FROM clubs")
+        # get the subscriptions for the current user
         row = db.execute("SELECT subscriptions FROM users WHERE id = :user_id", user_id=session["user_id"])[0]
         subscriptions = row["subscriptions"]
+        # if the user has subscriptions, create list with row values casted to int
         if subscriptions != None and subscriptions != '':
             subscriptions = [int(x) for x in parse(row["subscriptions"])]
+        # if the user has no subscriptions, create an empty list
         else:
             subscriptions = []
+        # calculate number of clubs to access index when iterating in html
         num = len(clubs)
+        # display clubs page
         return render_template("clubs.html", clubs=clubs, num=num, subscribed_clubs=subscriptions)
+    # the user reached the route via post
     else:
+        # get the user input for subscription
         subscription = request.form.get("subscribe")
+        # create a blank list to store clubs in
+        clubsList = []
+        # select the user from the database
         row = db.execute("SELECT * FROM users WHERE id = :user_id",
                          user_id=session["user_id"])[0]
-        if row["subscriptions"]:
+        # if the user has subscriptinos
+        if row["subscriptions"] != None and row["subscriptions"] != "":
             clubsList = parse(row["subscriptions"])
+            # if the user is not already subscribed to the club, add it to their subscriptions
             if subscription not in clubsList:
                 clubsList.append(subscription)
+        # if the user is not subscribed to any clubs, add the club to a blank list
         else:
-            clubsList = subscription
+            # update the user's subscriptions
+            clubsList.append(subscription)
         db.execute("UPDATE users SET subscriptions = :subscriptions WHERE id = :user_id",
                    user_id=session["user_id"], subscriptions=rejoin(clubsList))
+        # redirect to index
         return redirect("/")
 
 
 @app.route("/search")
 def search():
+    # get the word or letter the user is searching
     q = "'%" + request.args.get("q") + "%'"
+    # get clubs that have similar names to the searched word or letter
     results = db.execute("SELECT * FROM clubs WHERE name LIKE " + q)
+    # return the clubs that match the search to the webpage to be displayed
     return jsonify(results)
 
 
@@ -496,14 +516,21 @@ def eventsearchtitle():
 @app.route("/preferences", methods=["POST"])
 @login_required
 def preferences():
+    # get the preferences for the user
     preferences = db.execute("SELECT preferences FROM users WHERE id = :user_id", user_id=session["user_id"])
+    # if the user has no preferences
     if preferences[0]["preferences"] == None or preferences[0]["preferences"] == "":
+        # return a blank event feed
         return render_template("index.html", events=[])
+    # create a blank list to store the events in
     events = []
+    # loop through the user preferences
     for preference in parse(preferences[0]["preferences"]):
-        print(db.execute("SELECT * FROM events WHERE instr(tags, :preference) > 0", preference=preference))
+        # if the preferences of the user match the tags of an event
         if db.execute("SELECT * FROM events WHERE instr(tags, :preference) > 0", preference=preference) != []:
+            # add the event to the list
             events += (db.execute("SELECT * FROM events WHERE instr(tags, :preference) > 0", preference=preference))
+    # return the events with the same tags as the user's preferences
     return render_template("index.html", events=events)
 
 
@@ -669,8 +696,6 @@ def createevent():
         for i in range(len(parse(permissions[0]["permissions"]))):
             # if the user has permission for the club allow them to post
             if parse(permissions[0]["permissions"])[i] == club:
-                print(parse(permissions[0]["permissions"])[i])
-                print(club)
                 break
             # if the user does not have permission return an error
             if i == len(parse(permissions[0]["permissions"]))-1:
@@ -751,7 +776,6 @@ def createevent():
         # The file service.json stores the user's access and refresh tokens, and is
         # created automatically when the authorization flow completes for the first
         # time.
-
         SCOPES = ['https://www.googleapis.com/auth/calendar']
         SERVICE_ACCOUNT_FILE = '/home/ubuntu/workspace/final-project/service.json'
         credentials = service_account.Credentials.from_service_account_file(
@@ -778,21 +802,26 @@ def createevent():
                 ],
             },
         }
-
+        # add the event to the calendar
         event = service.events().insert(calendarId='cs50projectchi@gmail.com', body=event).execute()
 
+        # get the email and subscriptions from users
         rows = db.execute("SELECT email, subscriptions FROM users WHERE subscriptions IS NOT NULL")
+        # create an empty list of recipients
         emailList = []
-
+        # loop through each each user
         for row in rows:
-            row = db.execute("SELECT * FROM users WHERE id = :user_id", user_id=session["user_id"])[0]
-            if row["subscriptions"]:
+            # if the user has subscriptions
+            if row["subscriptions"] != None and row["subscriptions"] != "":
+                # get a list of subscriptions
                 clubsList = parse(row["subscriptions"])
+                # if the club is in the list of clubs the user is subscribed to, add their email to the group to email
                 if str(club_id[0]["club_id"]) in clubsList:
                     emailList.append(row["email"])
+        # send the email
         send_email(emailList, "New event posted by one of your clubs",
                    "One of the clubs you subscribe to just posted a new event. Check it out at http://ide50-omidiran.cs50.io:8080!")
-
+        # redirect to index
         return redirect("/")
     # user reached route via get
     else:
