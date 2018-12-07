@@ -22,6 +22,7 @@ def login_required(f):
 
 def parse(text):
     """Splits SQL text into list. Text should be delimited by a comma."""
+    # Make sure that there's text to be split
     if text == None:
         return text
     return text.split(',')
@@ -33,9 +34,11 @@ def rejoin(textList):
 def send_email(recipients, subject, body):
     """Sends email given recipients list, subject line, and body message.
     https://stackabuse.com/how-to-send-emails-with-gmail-using-python/"""
+    # Store login info
     gmail_user = 'cs50projectchi@gmail.com'
     gmail_password = 'carissahunterife'
 
+    # Build message in format needed for gmail
     email_text = "\r\n".join([
       "From: " + gmail_user,
       "To: " + ",".join(recipients),
@@ -46,6 +49,7 @@ def send_email(recipients, subject, body):
 
 
     try:
+        # Open server
         server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
         server.ehlo()
         server.login(gmail_user, gmail_password)

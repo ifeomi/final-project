@@ -4,11 +4,15 @@ import requests
 
 db = SQL("sqlite:///ClubPub.db")
 
+# Get HTML from OSL and convert to BeautifulSoup format
 site = requests.get("https://fas-mini-sites.fas.harvard.edu/osl/grouplist")
 content = site.content
 soup = BeautifulSoup(content, features="lxml")
+
+# Find links to get to individual pages for clubs
 links = [link.get('href') for link in soup.find_all('a')]
 
+# Iterate through links and navigate to pages
 for link in links:
     tempSite = requests.get("https://fas-mini-sites.fas.harvard.edu/osl/grouplist" + link)
     tempSoup = BeautifulSoup(tempSite.content, features="lxml")
