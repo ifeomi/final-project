@@ -166,7 +166,10 @@ def settings():
         }
 
         # append club IDs of selected clubs
-        subscriptions = parse(user["subscriptions"])
+        if subscriptions or subscriptions != '':
+            subscriptions = parse(user["subscriptions"])
+        else:
+            subscriptions = []
         new_subscriptions = request.form.getlist("subscriptions")
         if new_subscriptions:
             for club_name in new_subscriptions:
@@ -175,9 +178,10 @@ def settings():
                     subscriptions.append(str(club_id))
 
         # append name of selected preferences
-        preferences = parse(user["preferences"])
-        if preferences == None:
+        if preferences == None or preferences="":
             preferences = []
+        else:
+            preferences = parse(user["preferences"])
         new_preferences = request.form.getlist("preferences")
         if new_preferences:
             for pref in new_preferences:
