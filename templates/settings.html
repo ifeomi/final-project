@@ -5,42 +5,41 @@
 {% endblock %}
 
 {% block main %}
+<!-- modeled off of Bootstrap's checkout demo https://getbootstrap.com/docs/4.1/examples/checkout/ -->
     <div class="container white">
       <div class="py-5 text-center">
-        <img class="d-block mx-auto mb-4" src="../../assets/brand/bootstrap-solid.svg" alt="" width="72" height="72">
-        <h2>User Settings</h2>
+        <h2 class="page-title">User Settings</h2>
       </div>
-
       <div class="row">
         <div class="col-md-4 order-md-2 mb-4">
-          <h4 class="d-flex justify-content-between align-items-center mb-3">
-            Navigate
-          </h4>
-          <ul class="list-group mb-3">
-            <li class="list-group-item d-flex justify-content-between lh-condensed">
-                <h6 class="my-0"><a href="#account-information">Account Information</a></h6>
-            </li>
-            <li class="list-group-item d-flex justify-content-between lh-condensed">
-                <h6 class="my-0"><a href="#change-password">Change Password</a></h6>
-            </li>
-            <li class="list-group-item d-flex justify-content-between lh-condensed">
-                <h6 class="my-0"><a href="#subscriptions-settings">Subscriptions</a></h6>
-            </li>
-            <li class="list-group-item d-flex justify-content-between lh-condensed">
-                <h6 class="my-0"><a href="#preferences-settings">Preferences</a></h6>
-            </li>
-            <li class="list-group-item d-flex justify-content-between lh-condensed">
-                <h6 class="my-0"><a href="#permissions-settings">Permissions</a></h6>
-            </li>
-          </ul>
+            <h4 class="d-flex justify-content-between align-items-center mb-3">
+                Navigate
+            </h4>
+            <ul class="list-group mb-3">
+                <li class="list-group-item d-flex justify-content-between lh-condensed">
+                    <h6 class="my-0"><a href="#account-information">Account Information</a></h6>
+                </li>
+                <li class="list-group-item d-flex justify-content-between lh-condensed">
+                    <h6 class="my-0"><a href="#change-password">Change Password</a></h6>
+                </li>
+                <li class="list-group-item d-flex justify-content-between lh-condensed">
+                    <h6 class="my-0"><a href="#subscriptions-settings">Subscriptions</a></h6>
+                </li>
+                <li class="list-group-item d-flex justify-content-between lh-condensed">
+                    <h6 class="my-0"><a href="#preferences-settings">Preferences</a></h6>
+                </li>
+                <li class="list-group-item d-flex justify-content-between lh-condensed">
+                    <h6 class="my-0"><a href="#permissions-settings">Permissions</a></h6>
+                </li>
+            </ul>
         </div>
         <div class="col-md-8 order-md-1">
           <h4 class="mb-3" id="account-information">Account Information</h4>
-          <form action="/settings" method="post">
+          <form id="settings-form" action="/settings" method="post">
             <div class="row">
               <div class="col-md-6 mb-3">
                 <label for="name">Update name</label>
-                <input type="text" class="form-control" id="name" name="name" placeholder="{{name}}">
+                <input type="text" class="form-control" id="name" name="name" placeholder="{{user["name"]}}">
               </div>
               <div class="col-md-6 mb-3">
                 <label for="username">Update username</label>
@@ -48,13 +47,13 @@
                   <div class="input-group-prepend">
                     <span class="input-group-text">@</span>
                   </div>
-                  <input type="text" class="form-control" id="username" name="username" placeholder="{{ username }}">
+                  <input type="text" class="form-control" id="username" name="username" placeholder="{{ user["username"] }}">
                 </div>
               </div>
             </div>
             <div class="mb-3">
               <label for="email">Update email</label>
-              <input type="email" class="form-control" id="email" name="email" placeholder="{{ email }}">
+              <input type="email" class="form-control" id="email" name="email" placeholder="{{ user["email"] }}">
             </div>
             <hr class="mb-4">
             <h4 class="mb-3" id="change-password">Change Password</h4>
@@ -74,15 +73,21 @@
             <div class="row">
               <div class="col-md-6 mb-3">
                 Currently subscribed to updates from:
+                <ul>
+                  {% if subscriptions %}
+                    {% for sub in subscriptions %}
+                    <li>{{ sub }}</li>
+                    {% endfor %}
+                  {% endif %}
+                </ul>
               </div>
               <div class="col-md-6 mb-3">
                 <label for="subscriptions">Subscribe</label>
-                <select multiple class="form-control" name="subscriptions" id="subscriptions">
+                <select multiple class="form-control" name="subscriptions" id="subscriptions-settings">
                   <option value="" selected disabled>Begin typing to filter...</option>
-                  {% for permission in permissions %}
-                    <option value="{{ permission }}">{{ permission }}</option>
+                  {% for club in not_subscribed %}
+                    <option value="{{ club }}">{{ club }}</option>
                   {% endfor %}
-                  <option value="None">None</option>
                 </select>
               </div>
             </div>
@@ -90,15 +95,20 @@
             <div class="row">
               <div class="col-md-6 mb-3">
                 Current preferences:
+                <ul>
+                    {% for pref in preferences %}
+                    <li>{{ pref }}</li>
+                    {% endfor %}
+                </ul>
               </div>
               <div class="col-md-6 mb-3">
-                <label for="subscriptions">Add preferences</label>
-                <select multiple class="form-control" name="subscriptions" id="subscriptions">
+                <label for="preferences">Add preferences</label>
+                <select multiple class="form-control" name="preferences" id="preferences">
                   <option value="" selected disabled>Begin typing to filter...</option>
-                  {% for permission in permissions %}
-                    <option value="{{ permission }}">{{ permission }}</option>
+
+                  {% for pref in not_preferences %}
+                    <option value="{{ pref }}">{{ pref }}</option>
                   {% endfor %}
-                  <option value="None">None</option>
                 </select>
               </div>
             </div>
@@ -106,15 +116,21 @@
             <div class="row">
               <div class="col-md-6 mb-3">
                 You have permissions for the following clubs:
+                <ul>
+                  {% if permissions %}
+                    {% for permission in permissions %}
+                    <li>{{ permission }}</li>
+                    {% endfor %}
+                  {% endif %}
+                </ul>
               </div>
               <div class="col-md-6 mb-3">
-                <label for="subscriptions">Request permissions</label>
-                <select multiple class="form-control" name="subscriptions" id="subscriptions">
+                <label for="permissions">Request permissions</label>
+                <select multiple class="form-control" name="permissions" id="permissions">
                   <option value="" selected disabled>Begin typing to filter...</option>
-                  {% for permission in permissions %}
-                    <option value="{{ permission }}">{{ permission }}</option>
+                  {% for club in clubs %}
+                    <option value="{{ club["name"] }}">{{ club["name"] }}</option>
                   {% endfor %}
-                  <option value="None">None</option>
                 </select>
               </div>
             </div>
@@ -122,10 +138,36 @@
             <button class="btn btn-primary" type="submit">Submit Changes</button>
           </form>
         </div>
-      </div>
-      <footer class="my-5 pt-5 text-muted text-center text-small">
-      </footer>
     </div>
+    <script>
+        document.querySelector("form").onsubmit = function(event) {
+            event.preventDefault();
+            let username = document.forms["settings-form"]["username"].value;
+            let email = document.forms["settings-form"]["email"].value;
+            $.getJSON("/check?username=" + username, function(data) {
+                if (data == false) {
+                    alert("Username is already taken!");
+                    return false;
+                }
+                else {
+                  $.getJSON("/check-email?email="+email, function(data) {
+                    if (data == false) {
+                      alert("Email is in use!");
+                      return false;
+                    }
+                    else {
+                        document.getElementById("settings-form").submit();
+                        return true;
+                    }
+                  }
+                );
+                }
+            });
+        };
+    </script>
+    <footer class="my-5 pt-5 text-muted text-center text-small">
+    </footer>
+</div>
 
 <!--
     <font color="white">
