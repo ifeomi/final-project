@@ -220,6 +220,7 @@ def settings():
                     return redirect("/")
                 else:
                     return render_template("error.html", message="New passwords do not match")
+        flash("Settings successfully updated")
         return redirect("/settings")
 
     # User reached route via get
@@ -283,7 +284,6 @@ def login():
 
         # Remember which user has logged in
         session["user_id"] = rows[0]["id"]
-
         # Redirect user to home page
         return redirect("/")
 
