@@ -166,8 +166,9 @@ def settings():
         }
 
         # append club IDs of selected clubs
-        if subscriptions or subscriptions != '':
-            subscriptions = parse(user["subscriptions"])
+        subscriptions = user["subscriptions"]
+        if subscriptions != None and subscriptions != '':
+            subscriptions = parse(subscriptions)
         else:
             subscriptions = []
         new_subscriptions = request.form.getlist("subscriptions")
@@ -233,11 +234,19 @@ def settings():
         # get relevant tables
         user = db.execute("SELECT * FROM users WHERE id = :user_id", user_id=session["user_id"])[0]
         clubs = db.execute("SELECT * FROM clubs")
+
+        # error-checking for no preferences/subscriptions/permissions
         subscriptions = user["subscriptions"]
-        if subscriptions or subscriptions != '':
+        if subscriptions != None and subscriptions != '':
             subscriptions = [int(x) for x in parse(user["subscriptions"])]
         else:
             subscriptions = []
+        permissions = user["permissions"]
+        if permissions == None or permissions == '':
+            permissions = []
+        else:
+            permissions = parse(permissions)
+
         # initialize empty arrays
         not_subbed = []
         subbed = []
@@ -251,16 +260,21 @@ def settings():
             else:
                 not_subbed.append(club["name"])
         for preference in all_preferences:
-            if user["preferences"] or user["preferences"] != '':
+            print(user["preferences"])
+            print(parse(user["preferences"]))
+            if user["preferences"] != None and user["preferences"] != '':
                 if preference in parse(user["preferences"]):
                     preferences.append(preference)
+                    print("Adding "+preference+" to preferences")
                 else:
                     not_preferences.append(preference)
+                    print("Adding "+preference+" to not preferences")
             # if user has no preferences
             else:
                 not_preferences.append(preference)
-
-        return render_template("settings.html", user=user, clubs=clubs, subscriptions=subbed, not_subscribed=not_subbed, preferences=preferences, not_preferences=not_preferences, permissions=parse(user["permissions"]))
+            print(preferences)
+            print(not_preferences)
+        return render_template("settings.html", user=user, clubs=clubs, subscriptions=subbed, not_subscribed=not_subbed, preferences=preferences, not_preferences=not_preferences, permissions=permissions)
 
 
 @app.route("/login", methods=["GET", "POST"])
