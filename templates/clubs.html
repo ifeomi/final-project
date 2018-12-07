@@ -21,7 +21,7 @@
                         <p class="card-text"> <button type="button" data-toggle="modal" data-target="#modal-for-{{i}}" class="btn btn-primary btn-sm">View purpose</button> </p>
                         <a href="mailto:{{clubs[i]["email"]}}" class="card-link"> {{ clubs[i]["email"] }} </a>
                         <form action="/clubs" method="post">
-                            <input type="hidden" name="subscribe" value="{{ clubs[i]["club_id"] }}">
+                            <input type="hidden" name="subscribe" value="{{ clubs[i]['club_id'] }}">
                             {% if clubs[i]["club_id"] in subscribed_clubs %}
                             <button type="button" class="btn btn-secondary btn-sm">Subscribed</button>
                             {% else %}

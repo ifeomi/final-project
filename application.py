@@ -356,7 +356,7 @@ def register():
                 email = db.execute("SELECT email FROM clubs WHERE name=:name", name=club)[0]["email"]
                 emailList.append(email)
             send_email(emailList, "Verify Posting Permissions",
-                       "Hi! A student has requested to post events on behalf of your club. Please verify their club membership through this link: http://ide50-omidiran.cs50.io:8080/permissions")
+                       "Hi! A student has requested to post events on behalf of your club. Please verify their club membership through this link: http://ide50-carissawu.cs50.io:8080/permissions")
 
         # If insertion returns null, then username must be taken
         result = db.execute("INSERT INTO users (username, hash, name, email, preferences, permissions) VALUES(:username, :hashed, :name, :email, :preferences, :permissions)",
@@ -400,20 +400,21 @@ def clubs():
     else:
         # get the user input for subscription
         subscription = request.form.get("subscribe")
+        # create a blank list to store clubs in
+        clubsList = []
         # select the user from the database
         row = db.execute("SELECT * FROM users WHERE id = :user_id",
                          user_id=session["user_id"])[0]
-        # if the user has subscriptions
-        if row["subscriptions"]:
-            # get a list of the user's current subscriptions
+        # if the user has subscriptinos
+        if row["subscriptions"] != None and row["subscriptions"] != "":
             clubsList = parse(row["subscriptions"])
             # if the user is not already subscribed to the club, add it to their subscriptions
             if subscription not in clubsList:
                 clubsList.append(subscription)
         # if the user is not subscribed to any clubs, add the club to a blank list
         else:
-            clubsList = subscription
-        # update the user's subscriptions
+            # update the user's subscriptions
+            clubsList.append(subscription)
         db.execute("UPDATE users SET subscriptions = :subscriptions WHERE id = :user_id",
                    user_id=session["user_id"], subscriptions=rejoin(clubsList))
         # redirect to index
@@ -811,8 +812,8 @@ def createevent():
         # loop through each each user
         for row in rows:
             # if the user has subscriptions
-            if row["subscriptions"]:
-                # get the user's current subscriptions
+            if row["subscriptions"] != None and row["subscriptions"] != "":
+                # get a list of subscriptions
                 clubsList = parse(row["subscriptions"])
                 # if the club is in the list of clubs the user is subscribed to, add their email to the group to email
                 if str(club_id[0]["club_id"]) in clubsList:
