@@ -745,22 +745,16 @@ def createevent():
         db.execute("INSERT INTO events (club_id, title, description, picture, tags, date, time, location) VALUES(:club_id, :title, :description, :picture, :tags, :date, :time, :location)",
                    club_id=club_id[0]["club_id"], title=title, description=description, picture=picturelink, tags=rejoin(tags), date=eventdate, time=eventtime, location=location)
 
-        # The file token.json stores the user's access and refresh tokens, and is
+        # The file service.json stores the user's access and refresh tokens, and is
         # created automatically when the authorization flow completes for the first
         # time.
-        """
-        store = file.Storage('token.json')
-        creds = store.get()
-        if not creds or creds.invalid:
-            flow = client.flow_from_clientsecrets('credentials.json', SCOPES)
-            creds = tools.run_flow(flow, store)
-        service = build('calendar', 'v3', http=creds.authorize(Http()))
-        """
+
         SCOPES = ['https://www.googleapis.com/auth/calendar']
         SERVICE_ACCOUNT_FILE = '/home/ubuntu/workspace/final-project/service.json'
         credentials = service_account.Credentials.from_service_account_file(
             SERVICE_ACCOUNT_FILE, scopes=SCOPES)
         service = googleapiclient.discovery.build('calendar', 'v3', credentials=credentials)
+        # create event based on user input
         event = {
             'summary': title,
             'location': location,
@@ -783,20 +777,16 @@ def createevent():
         }
 
         event = service.events().insert(calendarId='cs50projectchi@gmail.com', body=event).execute()
-        print('Event created: %s' % (event.get('htmlLink')))
 
         rows = db.execute("SELECT email, subscriptions FROM users WHERE subscriptions IS NOT NULL")
-        print(rows)
         emailList = []
 
         for row in rows:
-            print(row["subscriptions"])
             row = db.execute("SELECT * FROM users WHERE id = :user_id", user_id=session["user_id"])[0]
             if row["subscriptions"]:
                 clubsList = parse(row["subscriptions"])
                 if str(club_id[0]["club_id"]) in clubsList:
                     emailList.append(row["email"])
-        print(emailList)
         send_email(emailList, "New event posted by one of your clubs",
                    "One of the clubs you subscribe to just posted a new event. Check it out at http://ide50-omidiran.cs50.io:8080!")
 
