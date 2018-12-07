@@ -82,7 +82,7 @@
                 </ul>
               </div>
               <div class="col-md-6 mb-3">
-                <label for="subscriptions">Subscribe</label>
+                <label for="subscriptions">Subscribe (command-click/ctrl-click to select multiple)</label>
                 <select multiple class="form-control" name="subscriptions" id="subscriptions-settings">
                   <option value="" selected disabled>Begin typing to filter...</option>
                   {% for club in not_subscribed %}
@@ -102,7 +102,7 @@
                 </ul>
               </div>
               <div class="col-md-6 mb-3">
-                <label for="preferences">Add preferences</label>
+                <label for="preferences">Add preferences (command-click/ctrl-click to select multiple)</label>
                 <select multiple class="form-control" name="preferences" id="preferences">
                   <option value="" selected disabled>Begin typing to filter...</option>
 
@@ -125,7 +125,7 @@
                 </ul>
               </div>
               <div class="col-md-6 mb-3">
-                <label for="permissions">Request permissions</label>
+                <label for="permissions">Request permissions (command-click/ctrl-click to select multiple)</label>
                 <select multiple class="form-control" name="permissions" id="permissions">
                   <option value="" selected disabled>Begin typing to filter...</option>
                   {% for club in clubs %}
