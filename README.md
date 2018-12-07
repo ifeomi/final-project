@@ -3,7 +3,7 @@
 Welcome to ClubPub! ClubPub is a website for creating, searching, and displaying events hosted by clubs at Harvard College.
 
 ## Requirements
-Per requirements.txt, run ``pip install --upgrade google-api-python-client oauth2client``` in terminal to install the Google API. To run our program and view the website, simply do “flask run” in the terminal once in the project folder and follow the link.
+Per requirements.txt, run ```pip install --upgrade google-api-python-client oauth2client``` in terminal to install the Google API. To run our program and view the website, simply do “flask run” in the terminal once in the project folder and follow the link.
 
 ## Register
 The first thing you’ll want to do is create an account on the Register page. Here, you will input your name, email, a username, and confirm your password. Additionally, you can select any club categories you are interested in by clicking on each item in the menu and holding command if you have a Mac or control if you have Windows . Next, you will want to select all of the clubs you are a member of. For each club you select, an email will be sent to that club asking them to confirm your participation in their club and allowing you to post events. Currently, because the website is not published online, an actual link can not be sent so we just used our flask IDE link in testing this, which can be demonstrated via our video. If the website were published, we would replace that with the actual link of the permissions webpage. To find clubs faster, you can simply click on any option in the menu and then begin typing the name of your desired club. After you have completed filling out the form, click the Register button to confirm your account.
