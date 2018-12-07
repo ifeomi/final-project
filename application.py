@@ -52,6 +52,7 @@ Session(app)
 
 # Configure CS50 Library to use SQLite database, preferences global list
 db = SQL("sqlite:///ClubPub.db")
+# Create a list of preferences
 all_preferences = ["Free Food", "Academic and Pre-Professional", "College Life", "Creative and Performing Arts", "Cultural and Racial Initiatives", "Gender and Sexuality", "Government and Politics", "Health and Wellness",
                    "Hobbies and Special Interests", "Media and Publications", "PBHA", "Peer Counseling/Peer Education", "Public Service", "Religious and Spiritual Life", "SEAS", "Social Organization", "Women's Initiatives"]
 
@@ -59,6 +60,7 @@ all_preferences = ["Free Food", "Academic and Pre-Professional", "College Life",
 @app.route("/")
 @login_required
 def index():
+    """Display all events for the future"""
     # get all of the events in the database
     events = db.execute("SELECT * FROM events")
     # get the current date
@@ -260,20 +262,14 @@ def settings():
             else:
                 not_subbed.append(club["name"])
         for preference in all_preferences:
-            print(user["preferences"])
-            print(parse(user["preferences"]))
             if user["preferences"] != None and user["preferences"] != '':
                 if preference in parse(user["preferences"]):
                     preferences.append(preference)
-                    print("Adding "+preference+" to preferences")
                 else:
                     not_preferences.append(preference)
-                    print("Adding "+preference+" to not preferences")
             # if user has no preferences
             else:
                 not_preferences.append(preference)
-            print(preferences)
-            print(not_preferences)
         return render_template("settings.html", user=user, clubs=clubs, subscriptions=subbed, not_subscribed=not_subbed, preferences=preferences, not_preferences=not_preferences, permissions=permissions)
 
 
@@ -379,16 +375,24 @@ def register():
 @app.route("/clubs", methods=["GET", "POST"])
 @login_required
 def clubs():
+    # the user reached the route via get get
     if request.method == "GET":
+        # get the clubs from the database
         clubs = db.execute("SELECT * FROM clubs")
+        # get the subscriptions for the current user
         row = db.execute("SELECT subscriptions FROM users WHERE id = :user_id", user_id=session["user_id"])[0]
         subscriptions = row["subscriptions"]
+        # if the user has subscriptions, create list with row values casted to int
         if subscriptions != None and subscriptions != '':
             subscriptions = [int(x) for x in parse(row["subscriptions"])]
+        # if the user has no subscriptions, create an empty list
         else:
             subscriptions = []
+        # calculate number of clubs to access index when iterating in html
         num = len(clubs)
+        # display clubs page
         return render_template("clubs.html", clubs=clubs, num=num, subscribed_clubs=subscriptions)
+    # the user reached the route via post
     else:
         subscription = request.form.get("subscribe")
         row = db.execute("SELECT * FROM users WHERE id = :user_id",
@@ -406,8 +410,11 @@ def clubs():
 
 @app.route("/search")
 def search():
+    # get the word or letter the user is searching
     q = "'%" + request.args.get("q") + "%'"
+    # get clubs that have similar names to the searched word or letter
     results = db.execute("SELECT * FROM clubs WHERE name LIKE " + q)
+    # return the clubs that match the search to the webpage to be displayed
     return jsonify(results)
 
 
@@ -496,14 +503,21 @@ def eventsearchtitle():
 @app.route("/preferences", methods=["POST"])
 @login_required
 def preferences():
+    # get the preferences for the user
     preferences = db.execute("SELECT preferences FROM users WHERE id = :user_id", user_id=session["user_id"])
+    # if the user has no preferences
     if preferences[0]["preferences"] == None or preferences[0]["preferences"] == "":
+        # return a blank event feed
         return render_template("index.html", events=[])
+    # create a blank list to store the events in
     events = []
+    # loop through the user preferences
     for preference in parse(preferences[0]["preferences"]):
-        print(db.execute("SELECT * FROM events WHERE instr(tags, :preference) > 0", preference=preference))
+        # if the preferences of the user match the tags of an event
         if db.execute("SELECT * FROM events WHERE instr(tags, :preference) > 0", preference=preference) != []:
+            # add the event to the list
             events += (db.execute("SELECT * FROM events WHERE instr(tags, :preference) > 0", preference=preference))
+    # return the events with the same tags as the user's preferences
     return render_template("index.html", events=events)
 
 
@@ -669,8 +683,6 @@ def createevent():
         for i in range(len(parse(permissions[0]["permissions"]))):
             # if the user has permission for the club allow them to post
             if parse(permissions[0]["permissions"])[i] == club:
-                print(parse(permissions[0]["permissions"])[i])
-                print(club)
                 break
             # if the user does not have permission return an error
             if i == len(parse(permissions[0]["permissions"]))-1:
