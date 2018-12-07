@@ -228,8 +228,10 @@ def settings():
         # get relevant tables
         user = db.execute("SELECT * FROM users WHERE id = :user_id", user_id=session["user_id"])[0]
         clubs = db.execute("SELECT * FROM clubs")
-        subscriptions = [int(x) for x in parse(user["subscriptions"])]
-
+        if subscriptions or subscriptions != '':
+            subscriptions = [int(x) for x in parse(user["subscriptions"])]
+        else:
+            subscriptions = []
         # initialize empty arrays
         not_subbed = []
         subbed = []
@@ -243,7 +245,7 @@ def settings():
             else:
                 not_subbed.append(club["name"])
         for preference in all_preferences:
-            if user["preferences"]:
+            if user["preferences"] or user["preferences"] != '':
                 if preference in parse(user["preferences"]):
                     preferences.append(preference)
                 else:
