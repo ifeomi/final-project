@@ -382,8 +382,11 @@ def clubs():
     if request.method == "GET":
         clubs = db.execute("SELECT * FROM clubs")
         row = db.execute("SELECT subscriptions FROM users WHERE id = :user_id", user_id=session["user_id"])[0]
-        subscriptions = [int(x) for x in parse(row["subscriptions"])]
-
+        subscriptions = row["subscriptions"]
+        if subscriptions != None and subscriptions != '':
+            subscriptions = [int(x) for x in parse(row["subscriptions"])]
+        else:
+            subscriptions = []
         num = len(clubs)
         return render_template("clubs.html", clubs=clubs, num=num, subscribed_clubs=subscriptions)
     else:
