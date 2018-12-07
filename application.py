@@ -291,7 +291,7 @@ def login():
 
         # Ensure password was submitted
         elif not request.form.get("password"):
-            return render_template("error.html", message="Must provide passowrd")
+            return render_template("error.html", message="Must provide password")
 
         # Query database for username
         rows = db.execute("SELECT * FROM users WHERE username = :username",
@@ -702,13 +702,13 @@ def createevent():
                 return render_template("error.html", message="Sorry, but you do not have permission to post events for this club. Request permissions on settings in order to be authorized to post events.")
 
         # convert to military time to put into calendar
-        if startampm == "pm":
+        if startampm == "pm" and int(starthour) != 12:
             # get the end hour in the proper format for the Google Calendar event
             starthourmilitary = int(starthour) + 12
             starthourmilitary = str(starthourmilitary)
         else:
             starthourmilitary = starthour
-        if endampm == "pm":
+        if endampm == "pm" and int(endhour) != 12:
             # get the end hour in the proper format for the Google Calendar event
             endhourmilitary = int(endhour) + 12
             endhourmilitary = str(endhourmilitary)
