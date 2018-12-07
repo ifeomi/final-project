@@ -233,6 +233,7 @@ def settings():
         # get relevant tables
         user = db.execute("SELECT * FROM users WHERE id = :user_id", user_id=session["user_id"])[0]
         clubs = db.execute("SELECT * FROM clubs")
+        subscriptions = user["subscription"]
         if subscriptions or subscriptions != '':
             subscriptions = [int(x) for x in parse(user["subscriptions"])]
         else:
