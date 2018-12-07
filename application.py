@@ -179,7 +179,7 @@ def settings():
 
         # append name of selected preferences
         preferences = user["preferences"]
-        if preferences == None or preferences="":
+        if preferences == None or preferences == "":
             preferences = []
         else:
             preferences = parse(preferences)
