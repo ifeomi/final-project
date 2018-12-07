@@ -48,7 +48,7 @@ main img
 
 body
 {
-    background-image: linear-gradient(rgba(26, 26, 26, 0.4), rgba(26, 26, 26, 0.4)), url(https://www.timeshighereducation.com/sites/default/files/styles/the_breaking_news_image_style/public/harvard_0.jpg?itok=NgKJw4gS);
+    background-image: linear-gradient(rgba(26, 26, 26, 0.4), rgba(26, 26, 26, 0.4)), url(https://s3.amazonaws.com/thumbnails.thecrimson.com/photos/2017/11/11/161529_1325935.jpg.1500x1000_q95_crop-smart_upscale.jpg);
     background-size: cover;
 }
 
