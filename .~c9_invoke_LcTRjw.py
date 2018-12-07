@@ -166,10 +166,7 @@ def settings():
         }
 
         # append club IDs of selected clubs
-        if subscriptions or subscriptions != '':
-            subscriptions = parse(user["subscriptions"])
-        else:
-            subscriptions = []
+        subscriptions = parse(user["subscriptions"])
         new_subscriptions = request.form.getlist("subscriptions")
         if new_subscriptions:
             for club_name in new_subscriptions:
@@ -178,10 +175,9 @@ def settings():
                     subscriptions.append(str(club_id))
 
         # append name of selected preferences
-        if preferences == None or preferences="":
+        preferences = parse(user["preferences"])
+        if preferences == None:
             preferences = []
-        else:
-            preferences = parse(user["preferences"])
         new_preferences = request.form.getlist("preferences")
         if new_preferences:
             for pref in new_preferences:
@@ -232,10 +228,8 @@ def settings():
         # get relevant tables
         user = db.execute("SELECT * FROM users WHERE id = :user_id", user_id=session["user_id"])[0]
         clubs = db.execute("SELECT * FROM clubs")
-        if subscriptions or subscriptions != '':
-            subscriptions = [int(x) for x in parse(user["subscriptions"])]
-        else:
-            subscriptions = []
+        subscriptions = [int(x) for x in parse(user["subscriptions"])]
+
         # initialize empty arrays
         not_subbed = []
         subbed = []
@@ -249,7 +243,7 @@ def settings():
             else:
                 not_subbed.append(club["name"])
         for preference in all_preferences:
-            if user["preferences"] or user["preferences"] != '':
+            if user["preferences"]:
                 if preference in parse(user["preferences"]):
                     preferences.append(preference)
                 else:
