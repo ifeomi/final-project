@@ -160,6 +160,7 @@ def check_email():
 def settings():
     # User reached route via post
     if request.method == "POST":
+        # get the users from the database
         user = db.execute("SELECT * FROM users WHERE id = :user_id", user_id=session["user_id"])[0]
         changes = {
             "name": request.form.get("name"),
@@ -327,6 +328,7 @@ def register():
     """Register user"""
     # from our own implementation in problem set 8 - finance but with new features
 
+    # user reached route via post
     if request.method == "POST":
         # Store inputs in variables for easier access
         username = request.form.get("username")
@@ -359,16 +361,18 @@ def register():
         # If insertion returns null, then username must be taken
         result = db.execute("INSERT INTO users (username, hash, name, email, preferences, permissions) VALUES(:username, :hashed, :name, :email, :preferences, :permissions)",
                             username=username, hashed=generate_password_hash(password), name=name, email=email, preferences=rejoin(preferences), permissions=None)
-
+        # Return the relevant error
         if not result:
             return render_template("error.html", message="Username is taken")
-
+        # get the user from the database
         rows = db.execute("SELECT * FROM users WHERE username = :username", username=username)
-
+        # store the user id
         session["user_id"] = rows[0]["id"]
+        # redirect to index
         return redirect("/")
-
+    # user reached route via get
     else:
+        # show the register form
         return render_template("register.html", clubs=db.execute("SELECT name FROM clubs"), preferences=all_preferences)
 
 
@@ -394,17 +398,25 @@ def clubs():
         return render_template("clubs.html", clubs=clubs, num=num, subscribed_clubs=subscriptions)
     # the user reached the route via post
     else:
+        # get the user input for subscription
         subscription = request.form.get("subscribe")
+        # select the user from the database
         row = db.execute("SELECT * FROM users WHERE id = :user_id",
                          user_id=session["user_id"])[0]
+        # if the user has subscriptions
         if row["subscriptions"]:
+            # get a list of the user's current subscriptions
             clubsList = parse(row["subscriptions"])
+            # if the user is not already subscribed to the club, add it to their subscriptions
             if subscription not in clubsList:
                 clubsList.append(subscription)
+        # if the user is not subscribed to any clubs, add the club to a blank list
         else:
             clubsList = subscription
+        # update the user's subscriptions
         db.execute("UPDATE users SET subscriptions = :subscriptions WHERE id = :user_id",
                    user_id=session["user_id"], subscriptions=rejoin(clubsList))
+        # redirect to index
         return redirect("/")
 
 
@@ -763,7 +775,6 @@ def createevent():
         # The file service.json stores the user's access and refresh tokens, and is
         # created automatically when the authorization flow completes for the first
         # time.
-
         SCOPES = ['https://www.googleapis.com/auth/calendar']
         SERVICE_ACCOUNT_FILE = '/home/ubuntu/workspace/final-project/service.json'
         credentials = service_account.Credentials.from_service_account_file(
@@ -790,21 +801,26 @@ def createevent():
                 ],
             },
         }
-
+        # add the event to the calendar
         event = service.events().insert(calendarId='cs50projectchi@gmail.com', body=event).execute()
 
+        # get the email and subscriptions from users
         rows = db.execute("SELECT email, subscriptions FROM users WHERE subscriptions IS NOT NULL")
+        # create an empty list of recipients
         emailList = []
-
+        # loop through each each user
         for row in rows:
-            row = db.execute("SELECT * FROM users WHERE id = :user_id", user_id=session["user_id"])[0]
+            # if the user has subscriptions
             if row["subscriptions"]:
+                # get the user's current subscriptions
                 clubsList = parse(row["subscriptions"])
+                # if the club is in the list of clubs the user is subscribed to, add their email to the group to email
                 if str(club_id[0]["club_id"]) in clubsList:
                     emailList.append(row["email"])
+        # send the email
         send_email(emailList, "New event posted by one of your clubs",
                    "One of the clubs you subscribe to just posted a new event. Check it out at http://ide50-omidiran.cs50.io:8080!")
-
+        # redirect to index
         return redirect("/")
     # user reached route via get
     else:
