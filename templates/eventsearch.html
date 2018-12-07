@@ -11,7 +11,7 @@
             <select class="form-control" name="tag" id="tag">
                 <option value="" selected disabled>Tag</option>
                 {% for tag in tags %}
-                    <option value={{tag}}>{{ tag }}</option>
+                    <option value="{{ tag }}">{{ tag }}</option>
                 {% endfor %}
             </select>
             <button class="btn btn-primary" type="submit">Search by Tag</button>

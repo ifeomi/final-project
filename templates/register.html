@@ -24,6 +24,7 @@
         </div>
         <div class="form-group">
             <h5><font color="white">Select event categories you're interested in</font></h5>
+            <h6><font color="white"> To select multiple options, hold down command if you have a Mac or control if you have Windows. </h6></font>
             <select class="custom-select form-control" name="preferences" multiple>
                 {% for preference in preferences %}
                     <option value="{{ preference }}">{{ preference }}</option>

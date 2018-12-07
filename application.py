@@ -354,7 +354,7 @@ def register():
                 email = db.execute("SELECT email FROM clubs WHERE name=:name", name=club)[0]["email"]
                 emailList.append(email)
             send_email(emailList, "Verify Posting Permissions",
-                       "Hi! A student has requested to post events on behalf of your club. Please verify their club membership through this link: http://ide50-omidiran.cs50.io:8080/permissions")
+                       "Hi! A student has requested to post events on behalf of your club. Please verify their club membership through this link: http://ide50-carissawu.cs50.io:8080/permissions")
 
         # If insertion returns null, then username must be taken
         result = db.execute("INSERT INTO users (username, hash, name, email, preferences, permissions) VALUES(:username, :hashed, :name, :email, :preferences, :permissions)",
@@ -395,14 +395,15 @@ def clubs():
     # the user reached the route via post
     else:
         subscription = request.form.get("subscribe")
+        clubsList = []
         row = db.execute("SELECT * FROM users WHERE id = :user_id",
                          user_id=session["user_id"])[0]
-        if row["subscriptions"]:
+        if row["subscriptions"] != None and row["subscriptions"] != "":
             clubsList = parse(row["subscriptions"])
             if subscription not in clubsList:
                 clubsList.append(subscription)
         else:
-            clubsList = subscription
+            clubsList.append(subscription)
         db.execute("UPDATE users SET subscriptions = :subscriptions WHERE id = :user_id",
                    user_id=session["user_id"], subscriptions=rejoin(clubsList))
         return redirect("/")
@@ -797,8 +798,8 @@ def createevent():
         emailList = []
 
         for row in rows:
-            row = db.execute("SELECT * FROM users WHERE id = :user_id", user_id=session["user_id"])[0]
-            if row["subscriptions"]:
+            #row = db.execute("SELECT * FROM users WHERE id = :user_id", user_id=session["user_id"])[0]
+            if row["subscriptions"] != None and row["subscriptions"] != "":
                 clubsList = parse(row["subscriptions"])
                 if str(club_id[0]["club_id"]) in clubsList:
                     emailList.append(row["email"])
