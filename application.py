@@ -193,7 +193,6 @@ def settings():
                 emailList.append(email)
         send_email(emailList, "Verify Posting Permissions",
                    "Hi! A student has requested to post events on behalf of your club. Please verify their club membership through this link: http://ide50-omidiran.cs50.io:8080/permissions")
-
         db.execute("UPDATE users SET preferences = :preferences, subscriptions=:subscriptions WHERE id=:user_id",
                    preferences=rejoin(preferences), subscriptions=rejoin(subscriptions), user_id=session["user_id"])
 
@@ -226,7 +225,7 @@ def settings():
     # User reached route via get
     else:
         # get relevant tables
-        user = db.execute("SELECT * FROM users WHERE id = :user_id", user_id = session["user_id"])[0]
+        user = db.execute("SELECT * FROM users WHERE id = :user_id", user_id=session["user_id"])[0]
         clubs = db.execute("SELECT * FROM clubs")
         subscriptions = [int(x) for x in parse(user["subscriptions"])]
 
@@ -334,10 +333,10 @@ def register():
         if permissions != None:
             emailList = []
             for club in permissions:
-                email = db.execute("SELECT email FROM clubs WHERE name=:name", name = club)[0]["email"]
+                email = db.execute("SELECT email FROM clubs WHERE name=:name", name=club)[0]["email"]
                 emailList.append(email)
-            send_email(emailList, "Verify Posting Permissions", "Hi! A student has requested to post events on behalf of your club. Please verify their club membership through this link: http://ide50-omidiran.cs50.io:8080/permissions")
-
+            send_email(emailList, "Verify Posting Permissions",
+                       "Hi! A student has requested to post events on behalf of your club. Please verify their club membership through this link: http://ide50-omidiran.cs50.io:8080/permissions")
 
         # If insertion returns null, then username must be taken
         result = db.execute("INSERT INTO users (username, hash, name, email, preferences, permissions) VALUES(:username, :hashed, :name, :email, :preferences, :permissions)",
